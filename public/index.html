@@ -1,25 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sarkar Smart AI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarkar Smart AI</title>
 
-<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="chat-container">
+<!-- ================= MENU ================= -->
 
-    <div class="header">
-        🤖 Sarkar Smart AI
+<button class="menu-btn" id="menuBtn">☰</button>
+
+<!-- ================= SIDEBAR ================= -->
+
+<div class="sidebar" id="sidebar">
+
+    <button class="close-btn" id="closeBtn">✖</button>
+
+    <h2>🤖 AI Tools</h2>
+
+    <button class="tool-btn active">💬 AI Chat</button>
+
+    <button class="tool-btn" id="newChatBtn">
+    ➕ New Chat
+</button>
+
+<button class="tool-btn" id="historyBtn">
+    🕒 Chat History
+</button>
+
+    <button class="tool-btn">📄 PDF Assistant</button>
+
+   <button class="tool-btn" id="imageCreatorBtn">
+    🎨 Image Creator
+</button>
+    <button class="tool-btn">🎤 Voice Assistant</button>
+
+    <button class="tool-btn">📷 Camera <small>(Coming Soon)</small></button>
+
+    <button class="tool-btn">⚙ Settings</button>
+
+    <button class="tool-btn">💬 Feedback</button>
+
+</div>
+
+<!-- ================= HEADER ================= -->
+
+<header class="header">
+
+    <img src="images/logo.png"
+         alt="Sarkar Smart AI Logo"
+         class="logo">
+
+    <div>
+
+        <h1>Sarkar Smart AI</h1>
+
+        <p>
+            AI Assistant for Students, Teachers & Parents
+        </p>
+
     </div>
 
-    <div id="chatBox" class="chat-box">
+</header>
 
-        <div class="bot">
-            👋 Hello! Welcome to Sarkar Smart AI.
+<!-- ================= HERO ================= -->
+
+<section class="hero">
+
+    <img src="images/logo.png"
+         class="hero-logo"
+         alt="AI Logo">
+
+    <h2>Welcome to Sarkar Smart AI</h2>
+
+    <p>
+        Learn • Teach • Grow with Artificial Intelligence
+    </p>
+
+    <button class="start-btn">
+        🚀 Start Chat
+    </button>
+
+</section>
+
+<!-- ================= STATISTICS ================= -->
+
+<section class="stats">
+
+    <div class="stat-card">
+        <h2>10,000+</h2>
+        <p>Teachers</p>
+    </div>
+
+    <div class="stat-card">
+        <h2>50,000+</h2>
+        <p>Students</p>
+    </div>
+
+    <div class="stat-card">
+        <h2>1M+</h2>
+        <p>Study Materials</p>
+    </div>
+
+    <div class="stat-card">
+        <h2>24×7</h2>
+        <p>AI Support</p>
+    </div>
+
+</section>
+
+<!-- ================= FEATURES ================= -->
+
+<section class="features">
+
+    <h2>✨ Features</h2>
+
+    <div class="feature-grid">
+
+        <div class="feature-card">
+            💬
+            <h3>AI Chat</h3>
+            <p>Ask anything instantly.</p>
+        </div>
+
+        <div class="feature-card">
+            📄
+            <h3>PDF Assistant</h3>
+            <p>Read & explain PDFs.</p>
+        </div>
+
+        <div class="feature-card">
+            🎨
+            <h3>Image Creator</h3>
+            <p>Create AI Images.</p>
+        </div>
+
+        <div class="feature-card">
+            🎤
+            <h3>Voice Chat</h3>
+            <p>Talk with AI.</p>
+        </div>
+
+        <div class="feature-card">
+            🌍
+            <h3>3 Languages</h3>
+            <p>Gujarati • Hindi • English</p>
+        </div>
+
+        <div class="feature-card">
+            📚
+            <h3>Study Material</h3>
+            <p>Notes, Papers & Resources.</p>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= CHAT ================= -->
+
+<main class="container">
+
+    <div class="welcome-box">
+
+        <h2>👋 AI Chat</h2>
+
+        <p>
+            Ask any educational question.
+        </p>
+
+    </div>
+
+    <div class="chat-box" id="chatBox">
+
+        <div class="bot-message">
+
+            🤖 Hello! I am Sarkar Smart AI.<br><br>
+
+            How can I help you today?
+
         </div>
 
     </div>
@@ -27,9 +189,13 @@
     <div class="input-area">
 
         <input
-        type="text"
-        id="userInput"
-        placeholder="Ask anything...">
+            type="text"
+            id="userInput"
+            placeholder="Type your question here...">
+
+             <button id="micBtn">
+        🎤
+    </button>
 
         <button id="sendBtn">
             Send
@@ -37,9 +203,62 @@
 
     </div>
 
+</main>
+
+<section class="image-generator" id="imageGenerator" style="display:none;">
+
+    <h2>🎨 AI Image Generator</h2>
+
+    <p>Describe the image you want to create.</p>
+
+    <div class="image-input">
+
+        <input
+            type="text"
+            id="imagePrompt"
+            placeholder="Example: A futuristic school with AI robots">
+
+        <button id="generateImageBtn">
+            Generate Image
+        </button>
+
+    </div>
+
+    <div id="imageResult"></div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+
+    <h3>Sarkar Smart AI</h3>
+
+    <p>
+        Created by <strong>Krunal Patel</strong>
+    </p>
+
+    <p>
+        © 2026 All Rights Reserved
+    </p>
+
+</footer>
+
+<div class="history-panel" id="historyPanel">
+
+    <div class="history-header">
+
+        <h2>🕒 Chat History</h2>
+
+        <button id="closeHistory">✖</button>
+
+    </div>
+
+    <div id="historyList"></div>
+
 </div>
 
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 
 </body>
 </html>

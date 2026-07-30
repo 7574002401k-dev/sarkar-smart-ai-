@@ -1,33 +1,140 @@
 import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const memoryFile = "./chat_memory.json";
 
-const memoryFile = path.join(__dirname, "..", "data", "conversations.json");
 
-// Create file if it doesn't exist
-if (!fs.existsSync(memoryFile)) {
-    fs.writeFileSync(memoryFile, JSON.stringify({}, null, 2));
+// Load Memory
+function loadMemory(){
+
+    if(!fs.existsSync(memoryFile)){
+
+        fs.writeFileSync(
+            memoryFile,
+            JSON.stringify({})
+        );
+
+    }
+
+
+    const data = fs.readFileSync(
+        memoryFile,
+        "utf-8"
+    );
+
+
+    return JSON.parse(data);
+
 }
 
-// Read memory
-export function getMemory(userId = "default") {
 
-    const data = JSON.parse(fs.readFileSync(memoryFile, "utf8"));
 
-    return data[userId] || [];
+// Save Memory
+
+function saveMemory(data){
+
+    fs.writeFileSync(
+
+        memoryFile,
+
+        JSON.stringify(data, null, 2)
+
+    );
 
 }
 
-// Save memory
-export function saveMemory(userId = "default", messages = []) {
 
-    const data = JSON.parse(fs.readFileSync(memoryFile, "utf8"));
 
-    data[userId] = messages;
 
-    fs.writeFileSync(memoryFile, JSON.stringify(data, null, 2));
+// Get Memory
+
+export function getMemory(userId="default"){
+
+
+    const memory = loadMemory();
+
+
+
+    if(!memory[userId]){
+
+        memory[userId] = [];
+
+    }
+
+
+
+    return memory[userId];
+
+
+}
+
+
+
+
+
+// Add Memory
+
+export function addMemory(
+
+    userId="default",
+
+    role,
+
+    content
+
+){
+
+
+    const memory = loadMemory();
+
+
+
+    if(!memory[userId]){
+
+        memory[userId] = [];
+
+    }
+
+
+
+
+    memory[userId].push({
+
+        role: role,
+
+        content: content,
+
+        time: new Date().toISOString()
+
+    });
+
+
+
+
+
+    // Keep last 20 messages
+
+    if(memory[userId].length > 20){
+
+
+        memory[userId] = memory[userId].slice(-20);
+
+
+    }
+
+
+
+
+
+    saveMemory(memory);
+
+
+
+    // Check Memory in Terminal
+
+    console.log(
+        "🧠 Sarkar Smart AI Memory:",
+        memory[userId]
+    );
+
 
 }
