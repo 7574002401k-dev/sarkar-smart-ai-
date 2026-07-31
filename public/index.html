@@ -21,7 +21,9 @@
 
     <h2>🤖 AI Tools</h2>
 
-    <button class="tool-btn active">💬 AI Chat</button>
+    <button class="tool-btn active" id="chatBtn">
+    💬 AI Chat
+</button>
 
     <button class="tool-btn" id="newChatBtn">
     ➕ New Chat
@@ -31,7 +33,9 @@
     🕒 Chat History
 </button>
 
-    <button class="tool-btn">📄 PDF Assistant</button>
+    <button class="tool-btn" id="pdfBtn">
+    📄 PDF Assistant
+</button>
 
    <button class="tool-btn" id="imageCreatorBtn">
     🎨 Image Creator
@@ -80,9 +84,9 @@
         Learn • Teach • Grow with Artificial Intelligence
     </p>
 
-    <button class="start-btn">
-        🚀 Start Chat
-    </button>
+    <button class="start-btn" id="startChatBtn">
+    🚀 Start Chat
+</button>
 
 </section>
 
@@ -204,6 +208,20 @@
     </div>
 
 </main>
+
+<!-- ================= PDF ASSISTANT ================= -->
+
+<section class="pdf-assistant" id="pdfSection" style="display:none;">
+
+    <h2>📄 AI PDF Assistant</h2>
+
+    <input type="file" id="pdfFile" accept=".pdf">
+
+    <button id="readPdfBtn">📖 Read PDF</button>
+
+    <div id="pdfResult"></div>
+
+</section>
 
 <section class="image-generator" id="imageGenerator" style="display:none;">
 

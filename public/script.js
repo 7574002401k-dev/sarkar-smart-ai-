@@ -2,427 +2,661 @@ import {
     addUserMessage,
     addBotMessage,
     addTyping
-} from "./modules/chat.js";
+} from "./chat.js";
 
 import {
     scrollBottom,
     escapeHtml
-} from "./modules/utils.js";const sendBtn = document.getElementById("sendBtn");
+} from "./utils.js";
+
+import { readPDF } from "./modules/pdf.js";
+
+
+const sendBtn = document.getElementById("sendBtn");
 const userInput = document.getElementById("userInput");
+let currentPdfText = "";
+const chatBtn = document.getElementById("chatBtn");
 const chatBox = document.getElementById("chatBox");
 const imageCreatorBtn = document.getElementById("imageCreatorBtn");
 const imageGenerator = document.getElementById("imageGenerator");
+
 const container = document.querySelector(".container");
+
 const micBtn = document.getElementById("micBtn");
+
 const menuBtn = document.getElementById("menuBtn");
 const closeBtn = document.getElementById("closeBtn");
 const sidebar = document.getElementById("sidebar");
-const startBtn = document.querySelector(".start-btn");
 
-/* ===========================
-   Sidebar
-=========================== */
+const startBtn = document.getElementById("startChatBtn");
 
-menuBtn.addEventListener("click", () => {
+const pdfBtn = document.getElementById("pdfBtn");
+const pdfSection = document.getElementById("pdfSection");
+const pdfFile = document.getElementById("pdfFile");
+const readPdfBtn = document.getElementById("readPdfBtn");
+const pdfResult = document.getElementById("pdfResult");
+
+
+
+/* ================= SIDEBAR ================= */
+
+
+if(menuBtn){
+
+menuBtn.onclick = () => {
+
     sidebar.classList.add("active");
-});
 
-closeBtn.addEventListener("click", () => {
+};
+
+}
+
+
+if(closeBtn){
+
+closeBtn.onclick = () => {
+
     sidebar.classList.remove("active");
-});
 
-/* ===========================
-   Start Chat Button
-=========================== */
+};
 
-if (startBtn) {
-    startBtn.addEventListener("click", () => {
-        document.querySelector(".container").scrollIntoView({
-            behavior: "smooth"
-        });
+}
 
-        userInput.focus();
+
+
+/* ================= START CHAT ================= */
+
+
+if(startBtn){
+
+startBtn.onclick = () => {
+
+
+    container.scrollIntoView({
+
+        behavior:"smooth"
+
     });
+
+
+    userInput.focus();
+
+
+};
+
 }
 
-/* ===========================
-   Send Events
-=========================== */
 
-sendBtn.addEventListener("click", sendMessage);
 
-userInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
+/* ================= SEND MESSAGE ================= */
+
+
+if(sendBtn){
+
+sendBtn.onclick = sendMessage;
+
+}
+
+
+if(userInput){
+
+userInput.addEventListener("keypress",(e)=>{
+
+
+    if(e.key==="Enter"){
+
         sendMessage();
+
     }
+
+
 });
 
-/* ===========================
-   Send Message
-=========================== */
+}
 
-async function sendMessage() {
 
-    const message = userInput.value.trim();
 
-    if (!message) return;
+async function sendMessage(){
 
-    addUserMessage(message);
 
-    userInput.value = "";
+const message = userInput.value.trim();
 
-    const loading = addTyping();
 
-    try {
+if(!message) return;
 
-        const response = await fetch(
-            "https://sarkar-smart-ai.onrender.com/chat",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    message
-                })
-            }
-        );
 
-        const data = await response.json();
 
-        loading.remove();
+addUserMessage(chatBox, message);
 
-        addBotMessage(data.reply);
 
-    } catch (err) {
+userInput.value="";
 
-        loading.remove();
 
-        addBotMessage("❌ Server connection error.");
+const loading = addTyping(chatBox);
 
-        console.error(err);
 
-    }
 
-    scrollBottom();
+try{
+
+
+const response = await fetch(
+
+"https://sarkar-smart-ai.onrender.com/chat",
+
+{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body: JSON.stringify({
+    message: message,
+    pdfText: currentPdfText
+})
 
 }
 
-/* ===========================
-   User Message
-=========================== */
+);
 
-function addUserMessage(message) {
 
-    chatBox.innerHTML += `
-        <div class="user-message">
-            👤 ${escapeHtml(message)}
-        </div>
-    `;
 
-    scrollBottom();
-
+if (!response.ok) {
+    throw new Error("Server Error");
 }
 
-/* ===========================
-   Bot Message
-=========================== */
+const data = await response.json();
 
-function addBotMessage(message) {
 
-    chatBox.innerHTML += `
-        <div class="bot-message">
 
-            🤖 ${message}
+loading.remove();
 
-            <div style="margin-top:12px">
 
-                <button class="copy-btn">📋 Copy</button>
 
-            </div>
+addBotMessage(chatBox, data.reply);
 
-        </div>
-    `;
 
-    const btns = document.querySelectorAll(".copy-btn");
-
-    const btn = btns[btns.length - 1];
-
-    btn.onclick = () => {
-
-        navigator.clipboard.writeText(message);
-
-        btn.innerHTML = "✅ Copied";
-
-        setTimeout(() => {
-
-            btn.innerHTML = "📋 Copy";
-
-        }, 1500);
-
-    };
 
 saveChat(chatBox.innerHTML);
 
-speak(message);
 
-    scrollBottom();
 
-}
+speak(data.reply);
 
-/* ===========================
-   AI Typing
-=========================== */
 
-function addTyping() {
-
-    const div = document.createElement("div");
-
-    div.className = "bot-message typing";
-
-    div.innerHTML = "🤖 Thinking...";
-
-    chatBox.appendChild(div);
-
-    scrollBottom();
-
-    return div;
 
 }
 
-/* ===========================
-   Counter Animation
-=========================== */
+catch(error){
 
-document.querySelectorAll(".stat-card h2").forEach((counter) => {
 
-    const text = counter.innerText;
+loading.remove();
 
-    const number = parseInt(text.replace(/\D/g, ""));
 
-    if (!number) return;
+addBotMessage(
+"❌ Server connection error."
+);
 
-    let value = 0;
 
-    const speed = Math.max(10, Math.floor(number / 80));
+console.log(error);
 
-    const timer = setInterval(() => {
-
-        value += speed;
-
-        if (value >= number) {
-
-            value = number;
-
-            clearInterval(timer);
-
-        }
-
-        if (text.includes("24")) {
-
-            counter.innerText = "24×7";
-
-        }
-
-        else if (text.includes("1M")) {
-
-            counter.innerText = value.toLocaleString() + "+";
-
-        }
-
-        else {
-
-            counter.innerText = value.toLocaleString() + "+";
-
-        }
-
-    }, 20);
-
-});
-
-/* ===========================
-   Utilities
-=========================== */
-
-function scrollBottom() {
-
-    chatBox.scrollTop = chatBox.scrollHeight;
 
 }
 
-function escapeHtml(text) {
 
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
 
-}const historyBtn=document.getElementById("historyBtn");
-const historyPanel=document.getElementById("historyPanel");
-const closeHistory=document.getElementById("closeHistory");
-const historyList=document.getElementById("historyList");
-const newChatBtn=document.getElementById("newChatBtn");
+scrollBottom();
 
-let chats=JSON.parse(localStorage.getItem("chatHistory"))||[];
+
+
+}
+
+
+
+
+/* ================= CHAT HISTORY ================= */
+
+
+const historyBtn =
+document.getElementById("historyBtn");
+
+
+const historyPanel =
+document.getElementById("historyPanel");
+
+
+const closeHistory =
+document.getElementById("closeHistory");
+
+
+const historyList =
+document.getElementById("historyList");
+
+
+const newChatBtn =
+document.getElementById("newChatBtn");
+
+
+
+let chats =
+JSON.parse(localStorage.getItem("chatHistory")) || [];
+
+
+
+if(historyBtn){
 
 historyBtn.onclick=()=>{
 
+
 historyPanel.classList.add("active");
+
 
 loadHistory();
 
+
 };
+
+}
+
+
+
+if(closeHistory){
 
 closeHistory.onclick=()=>{
 
+
 historyPanel.classList.remove("active");
 
+
 };
+
+}
+
+
+
+
+if(newChatBtn){
 
 newChatBtn.onclick=()=>{
 
+
 chatBox.innerHTML="";
+
 
 };
 
+}
+
+
+
+
 function saveChat(text){
+
 
 chats.unshift({
 
 time:new Date().toLocaleString(),
 
-text
+text:text
 
 });
 
-localStorage.setItem("chatHistory",JSON.stringify(chats));
+
+localStorage.setItem(
+
+"chatHistory",
+
+JSON.stringify(chats)
+
+);
+
 
 }
 
+
+
 function loadHistory(){
+
 
 historyList.innerHTML="";
 
+
 chats.forEach(chat=>{
 
-const div=document.createElement("div");
+
+let div=document.createElement("div");
+
 
 div.className="history-item";
 
-div.innerHTML=`
-<b>${chat.time}</b><br><br>
+
+div.innerHTML=
+
+`
+
+<b>${chat.time}</b>
+
+<br><br>
+
 ${chat.text.substring(0,80)}...
+
 `;
+
+
 
 div.onclick=()=>{
 
+
 chatBox.innerHTML=chat.text;
+
 
 historyPanel.classList.remove("active");
 
+
 };
+
+
 
 historyList.appendChild(div);
 
+
+
 });
 
-}/* ===========================
-   Voice Recognition
-=========================== */
+
+}
+
+
+
+
+
+/* ================= VOICE ================= */
+
+
 
 const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
 
-if (SpeechRecognition) {
+window.SpeechRecognition ||
 
-    const recognition = new SpeechRecognition();
+window.webkitSpeechRecognition;
 
-    recognition.lang = "en-IN";
-    recognition.continuous = false;
-    recognition.interimResults = false;
 
-    micBtn.addEventListener("click", () => {
 
-        recognition.start();
+if(SpeechRecognition){
 
-        micBtn.classList.add("listening");
 
-    });
+const recognition = new SpeechRecognition();
 
-    recognition.onresult = (event) => {
 
-        const speech = event.results[0][0].transcript;
+recognition.lang="gu-IN";
 
-        userInput.value = speech;
 
-        setTimeout(() => {
+recognition.continuous=false;
 
-        sendMessage();
 
-    }, 400);
 
-    };
+if(micBtn){
 
-    recognition.onend = () => {
 
-        micBtn.classList.remove("listening");
+micBtn.onclick=()=>{
 
-    };
 
-    recognition.onerror = () => {
+recognition.start();
 
-        micBtn.classList.remove("listening");
 
-        alert("Voice recognition error.");
+};
 
-    };
+}
 
-} else {
 
-    micBtn.style.display = "none";
 
-    console.log("Speech Recognition not supported.");
 
-}/* ===========================
-   Text To Speech
-=========================== */
+recognition.onresult=(event)=>{
+
+
+userInput.value =
+
+event.results[0][0].transcript;
+
+
+sendMessage();
+
+
+};
+
+
+
+}
+
+
+
+
+
+
+/* ================= TEXT TO SPEECH ================= */
+
+
 
 function speak(text){
 
-    if(!("speechSynthesis" in window)) return;
 
-    window.speechSynthesis.cancel();
+if(!window.speechSynthesis)
 
-    const utterance = new SpeechSynthesisUtterance(text);
+return;
 
-    utterance.rate = 1;
 
-    utterance.pitch = 1;
+let speech =
 
-    utterance.volume = 1;
+new SpeechSynthesisUtterance(text);
 
-    utterance.lang = "en-IN";
 
-    window.speechSynthesis.speak(utterance);
+speech.lang="gu-IN";
 
-}/* ===========================
-   Image Creator Section
-=========================== */
 
-imageCreatorBtn.addEventListener("click", () => {
+speech.rate=1;
 
-    // Chat Section Hide
-    container.style.display = "none";
 
-    // Show Image Generator
-    imageGenerator.style.display = "block";
 
-    // Sidebar Close
-    sidebar.classList.remove("active");
+window.speechSynthesis.speak(speech);
 
-    // Scroll to Image Generator
-    imageGenerator.scrollIntoView({
-        behavior: "smooth"
-    });
+
+
+}
+
+
+
+
+
+/* ================= IMAGE CREATOR ================= */
+
+
+
+if(imageCreatorBtn){
+
+
+imageCreatorBtn.onclick=()=>{
+
+
+container.style.display="none";
+
+
+imageGenerator.style.display="block";
+
+
+sidebar.classList.remove("active");
+
+
+
+imageGenerator.scrollIntoView({
+
+behavior:"smooth"
+
+});
+
+
+};
+
+
+}
+
+
+/* ================= PDF ASSISTANT ================= */
+
+if (pdfBtn) {
+
+    pdfBtn.onclick = () => {
+
+        container.style.display = "none";
+        imageGenerator.style.display = "none";
+        pdfSection.style.display = "block";
+
+        sidebar.classList.remove("active");
+
+        pdfSection.scrollIntoView({
+            behavior: "smooth"
+        });
+
+    };
+
+}
+
+/* ================= AI CHAT ================= */
+
+if (chatBtn) {
+
+    chatBtn.onclick = () => {
+
+        container.style.display = "block";
+        pdfSection.style.display = "none";
+        imageGenerator.style.display = "none";
+
+        sidebar.classList.remove("active");
+
+        container.scrollIntoView({
+            behavior: "smooth"
+        });
+
+    };
+
+}
+
+
+if (readPdfBtn) {
+
+    readPdfBtn.onclick = async () => {
+
+        const file = pdfFile.files[0];
+
+        if (!file) {
+            alert("Please select a PDF file.");
+            return;
+        }
+
+        pdfResult.innerHTML = "📖 Reading PDF...";
+
+        try {
+
+            const text = await readPDF(file);
+
+            currentPdfText = text;
+
+            pdfResult.innerHTML =
+                "<h3>PDF Preview</h3><pre>" +
+                text.substring(0, 5000) +
+                "</pre>";
+
+        } catch (err) {
+
+            console.error(err);
+
+            pdfResult.innerHTML =
+                "❌ Unable to read PDF.";
+
+        }
+
+    };
+
+}
+
+
+/* ================= COUNTER ================= */
+
+
+document.querySelectorAll(".stat-card h2")
+
+.forEach(counter=>{
+
+
+let text=counter.innerText;
+
+
+let number=parseInt(
+
+text.replace(/\D/g,"")
+
+);
+
+
+
+if(!number) return;
+
+
+
+let value=0;
+
+
+
+let timer=setInterval(()=>{
+
+
+value+=Math.ceil(number/50);
+
+
+
+if(value>=number){
+
+
+value=number;
+
+
+clearInterval(timer);
+
+
+}
+
+
+
+if(text.includes("M")){
+
+
+counter.innerText=value.toLocaleString()+"+";
+
+
+}
+
+else if(text.includes("24")){
+
+
+counter.innerText="24×7";
+
+
+}
+
+else{
+
+
+counter.innerText=value.toLocaleString()+"+";
+
+
+}
+
+
+
+},30);
+
+
 
 });

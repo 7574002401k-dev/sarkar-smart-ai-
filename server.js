@@ -2,338 +2,125 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import OpenAI from "openai";
-
-import { getMemory, addMemory } from "./memory.js";
-
+import path from "path";
+import { fileURLToPath } from "url";
+import { getAIResponse } from "./services/openai.js";
 
 dotenv.config();
 
-
 const app = express();
-
 const PORT = process.env.PORT || 3000;
 
-
-app.use(cors());
-
-app.use(express.json());
-
-
-
-// OpenAI Setup
-
+// OpenAI Client (Image Generator માટે)
 const client = new OpenAI({
-
-    apiKey: process.env.OPENAI_API_KEY
-
+    apiKey: process.env.OPENAI_API_KEY,
 });
 
+// ES Module માટે __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+// Middleware
+app.use(cors());
+app.use(express.json({
+    limit: "20mb"
+}));
 
+// Public Folder Serve
+app.use(express.static(path.join(__dirname, "public")));
 
-// Home Route
+// ===============================
+// HOME
+// ===============================
 
-app.get("/", (req,res)=>{
-
-    res.send("🚀 Sarkar Smart AI Server Running Successfully");
-
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-
-
-
 
 // ===============================
 // CHAT API
 // ===============================
 
+app.post("/chat", async (req, res) => {
 
-app.post("/chat", async(req,res)=>{
+    try {
 
+        const userMessage = req.body.message;
+        const pdfText = req.body.pdfText || "";
 
-try{
+        if (!userMessage) {
+            return res.json({
+                reply: "Please enter your question."
+            });
+        }
 
-
-const userMessage = req.body.message;
-
-
-if(!userMessage){
-
-    return res.json({
-
-        reply:"Please enter your question."
-
-    });
-
-}
-
-
-
-const userId = "default";
-
-
-
-// Save User Message
-
-addMemory(
-
-    userId,
-
-    "user",
-
-    userMessage
-
+        const aiReply = await getAIResponse(
+    userMessage,
+    pdfText
 );
 
+        res.json({
+            reply: aiReply
+        });
 
+    } catch (error) {
 
-// Get Previous Chat Memory
+        console.error("CHAT ERROR:", error);
 
-const history = getMemory(userId);
+        res.status(500).json({
+            reply: "❌ Sarkar Smart AI Server Error"
+        });
 
-
-
-console.log("CURRENT MEMORY:", history);
-
-
-
-
-// AI Response
-
-const response = await client.chat.completions.create({
-
-
-model:"gpt-4o-mini",
-
-
-
-messages:[
-
-
-{
-
-role:"system",
-
-content:`
-
-You are Sarkar Smart AI.
-
-Created by Krunal Patel.
-
-You are an education AI assistant.
-
-Help:
-- Students
-- Teachers
-- Parents
-
-
-Support:
-- GSEB
-- CBSE
-- NCERT
-- Std 1 to 12
-
-
-Features:
-- Notes
-- Quiz
-- MCQ
-- Lesson Plan
-- Worksheet
-- Science
-- Maths
-- Essay
-
-
-Language:
-
-Understand Gujarati, Hindi and English.
-
-Understand Gujarati typed in English letters.
-
-Reply in the same language as user.
-
-
-Memory:
-
-Use previous conversation context.
-
-
-Quiz:
-
-When user asks quiz:
-First give only questions.
-
-After answers:
-Check and explain.
-
-
-Do not say you are ChatGPT.
-
-Always behave as Sarkar Smart AI.
-
-
-`
-
-},
-
-
-
-...history
-
-
-
-]
-
+    }
 
 });
 
-
-
-
-
-const aiReply = response.choices[0].message.content;
-
-
-
-
-// Save AI Reply
-
-addMemory(
-
-    userId,
-
-    "assistant",
-
-    aiReply
-
-);
-
-
-
-
-
-res.json({
-
-    reply: aiReply
-
-});
-
-
-
-}
-
-
-
-catch(error){
-
-
-console.log("CHAT ERROR:",error);
-
-
-res.status(500).json({
-
-reply:"❌ Sarkar Smart AI Server Error"
-
-});
-
-
-}
-
-
-
-});
 // ===============================
-// AI IMAGE GENERATOR API
+// IMAGE GENERATOR API
 // ===============================
 
+app.post("/generate-image", async (req, res) => {
 
-app.post("/generate-image", async(req,res)=>{
+    try {
 
+        const prompt = req.body.prompt;
 
-try{
+        if (!prompt) {
+            return res.status(400).json({
+                error: "Please enter image description"
+            });
+        }
 
+        const imageResponse = await client.images.generate({
+            model: "gpt-image-1",
+            prompt: prompt,
+            size: "1024x1024"
+        });
 
-const prompt = req.body.prompt;
+        const imageUrl = imageResponse.data?.[0]?.url;
 
+        res.json({
+            image: imageUrl
+        });
 
-if(!prompt){
+    } catch (error) {
 
-    return res.json({
+        console.error("IMAGE ERROR:", error);
 
-        error:"Please enter image description"
+        res.status(500).json({
+            error: "❌ Image generation failed"
+        });
 
-    });
-
-}
-
-
-
-// Create Image
-
-const imageResponse = await client.images.generate({
-
-    model:"gpt-image-1",
-
-    prompt:prompt,
-
-    size:"1024x1024"
-
-});
-
-
-
-const imageUrl = imageResponse.data[0].url;
-
-
-
-res.json({
-
-    image:imageUrl
+    }
 
 });
-
-
-
-}
-
-
-
-catch(error){
-
-
-console.log("IMAGE ERROR:",error);
-
-
-res.status(500).json({
-
-error:"❌ Image generation failed"
-
-});
-
-
-}
-
-
-
-});
-
-
-
 
 // ===============================
 // SERVER START
 // ===============================
 
+app.listen(PORT, () => {
 
-app.listen(PORT,()=>{
-
-
-console.log(
-
-`🚀 Sarkar Smart AI Server running at http://localhost:${PORT}`
-
-);
-
+    console.log(`🚀 Sarkar Smart AI Server running at http://localhost:${PORT}`);
 
 });

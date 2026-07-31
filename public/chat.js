@@ -122,49 +122,27 @@ export function addTyping(chatBox){
 
 function formatResponse(text){
 
+    if (!text) {
+        return "❌ No response received from AI.";
+    }
 
-return text
+    return text
 
-.replace(/&/g,"&amp;")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
 
-.replace(/</g,"&lt;")
+    // Bold
+    .replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>")
 
-.replace(/>/g,"&gt;")
+    // Headings
+    .replace(/^### (.*)$/gm,"<h3>$1</h3>")
+    .replace(/^## (.*)$/gm,"<h2>$1</h2>")
+    .replace(/^# (.*)$/gm,"<h1>$1</h1>")
 
+    // Bullet
+    .replace(/^- (.*)$/gm,"• $1")
 
-// Bold
-
-.replace(/\*\*(.*?)\*\*/g,
-
-"<strong>$1</strong>")
-
-
-// Headings
-
-.replace(/^### (.*)$/gm,
-
-"<h3>$1</h3>")
-
-
-.replace(/^## (.*)$/gm,
-
-"<h2>$1</h2>")
-
-
-.replace(/^# (.*)$/gm,
-
-"<h1>$1</h1>")
-
-
-// Bullet
-
-.replace(/^- (.*)$/gm,
-
-"• $1")
-
-
-// Line break
-
-.replace(/\n/g,"<br>");
-
+    // Line break
+    .replace(/\n/g,"<br>");
 }
