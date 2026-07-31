@@ -176,7 +176,7 @@ loading.remove();
 
 
 
-addBotMessage(chatBox, data.reply);
+addBotMessage(chatBox, "❌ Server connection error.");
 
 
 
@@ -208,7 +208,7 @@ console.log(error);
 
 
 
-scrollBottom();
+scrollBottom(chatBox);
 
 
 
@@ -297,10 +297,10 @@ function saveChat(text){
 
 
 chats.unshift({
-
 time:new Date().toLocaleString(),
 
 text:text
+
 
 });
 
@@ -561,12 +561,43 @@ if (readPdfBtn) {
 
             const text = await readPDF(file);
 
-            currentPdfText = text;
+// Clean PDF Text
+const cleaned = text
 
-            pdfResult.innerHTML =
-                "<h3>PDF Preview</h3><pre>" +
-                text.substring(0, 5000) +
-                "</pre>";
+    .replace(/\n\s*\n/g, "\n")
+    .replace(/•\s*\n\s*/g, "• ")
+    .replace(/:\s*\n\s*/g, ": ")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+
+currentPdfText = cleaned;
+
+const words = cleaned.trim().split(/\s+/).length;
+const chars = cleaned.length;
+
+const preview = cleaned.substring(0, 3000);
+
+pdfResult.innerHTML = `
+    <div class="pdf-info">
+
+        <h3>📄 ${file.name}</h3>
+
+        <p><b>Characters:</b> ${chars.toLocaleString()}</p>
+
+        <p><b>Words:</b> ${words.toLocaleString()}</p>
+
+        <hr>
+
+        <h4>Preview</h4>
+
+        <div class="pdf-preview">
+
+            ${preview.replace(/\n/g,"<br>")}
+
+        </div>
+
+    </div>
+`;
 
         } catch (err) {
 

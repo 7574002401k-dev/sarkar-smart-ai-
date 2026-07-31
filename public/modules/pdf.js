@@ -21,7 +21,11 @@ export async function readPDF(file) {
 
         const content = await p.getTextContent();
 
-        text += content.items.map(item => item.str).join(" ");
+        const pageText = content.items
+    .map(item => item.str)
+    .join("\n");
+
+text += pageText + "\n\n";
         text += "\n\n";
     }
 

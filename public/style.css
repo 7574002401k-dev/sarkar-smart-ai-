@@ -14,21 +14,19 @@ body {
 
 /* Header */
 
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 25px;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
+.header{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:15px;
+    padding:15px 20px;
 }
 
 
-.logo {
-    width: 90px;
-    height: 90px;
-    object-fit: contain;
+.logo{
+    width:60px;
+    height:60px;
+    object-fit:contain;
 }
 
 
@@ -47,10 +45,13 @@ body {
 
 /* Main Container */
 
-.container {
-    width: 90%;
-    max-width: 900px;
-    margin: 30px auto;
+.container{
+    width:95%;
+    max-width:1000px;
+    margin:20px auto;
+    display:flex;
+    flex-direction:column;
+    height:calc(100vh - 170px);
 }
 
 
@@ -75,16 +76,14 @@ body {
 
 /* Chat Box */
 
-.chat-box {
-
-    margin-top: 25px;
-    height: 350px;
-    overflow-y: auto;
-    background: white;
-    color: black;
-    border-radius: 20px;
-    padding: 20px;
-
+.chat-box{
+    flex:1;
+    overflow-y:auto;
+    padding:20px;
+    background:#ffffff;
+    border-radius:15px;
+    box-shadow:0 5px 20px rgba(0,0,0,.08);
+    margin-bottom:15px;
 }
 
 
@@ -104,12 +103,10 @@ body {
 
 /* Input Area */
 
-.input-area {
-
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-
+.input-area{
+    display:flex;
+    gap:10px;
+    align-items:center;
 }
 
 
@@ -150,41 +147,43 @@ body {
 
 /* Footer */
 
-footer {
-
-    text-align: center;
-    padding: 20px;
-    margin-top: 30px;
-    background: rgba(255,255,255,0.1);
-
+footer{
+    text-align:center;
+    padding:12px;
+    font-size:14px;
+    color:#777;
 }
 
 
 /* Mobile */
 
-@media(max-width:600px){
+@media (max-width:768px){
 
-    .header{
-        flex-direction: column;
-        text-align:center;
+    .container{
+        width:98%;
+        height:calc(100vh - 150px);
     }
-
 
     .header h1{
-        font-size:30px;
+        font-size:24px;
     }
 
-
-    .input-area{
-        flex-direction:column;
+    .logo{
+        width:50px;
+        height:50px;
     }
 
-
-    .input-area button{
-        width:100%;
+    #userInput{
+        font-size:15px;
     }
 
-}.bot {
+    #sendBtn{
+        padding:12px 18px;
+    }
+
+}
+
+.bot {
     background:#e3f2fd;
     color:black;
     padding:10px 15px;
@@ -211,122 +210,77 @@ footer {
     z-index: 1000;
 }
 
+/* ===== Sidebar ===== */
 
-/* Sidebar */
-
-.sidebar {
-
-    position: fixed;
-
-    top: 0;
-    left: -280px;
-
-    width: 260px;
-    height: 100vh;
-
-    background: rgba(15,32,39,0.98);
-
-    padding: 25px;
-
-    transition: 0.4s;
-
-    z-index: 999;
-
-    box-shadow: 5px 0 20px rgba(0,0,0,0.4);
-
-}
-
-
-/* Open Sidebar */
-
-.sidebar.active {
-
-    left: 0;
-
-}
-
-
-
-.sidebar h2 {
-
-    color:#00eaff;
-
-    text-align:center;
-
-    margin-bottom:30px;
-
-}
-
-
-/* Close Button */
-
-.close-btn {
-
-    float:right;
-
-    background:none;
-
+.menu-btn{
+    position:fixed;
+    top:20px;
+    left:20px;
+    width:50px;
+    height:50px;
     border:none;
-
-    color:white;
-
-    font-size:20px;
-
-    cursor:pointer;
-
-}
-
-
-
-/* Vertical Buttons */
-
-.tool-btn {
-
-    display:block;
-
-    width:100%;
-
-    padding:15px;
-
-    margin:15px 0;
-
-    border:none;
-
-    border-radius:12px;
-
-    background:#203a43;
-
-    color:white;
-
-    text-align:left;
-
-    font-size:17px;
-
-    cursor:pointer;
-
-    transition:0.3s;
-
-}
-
-
-
-.tool-btn:hover {
-
+    border-radius:10px;
     background:#00eaff;
+    color:#000;
+    font-size:24px;
+    cursor:pointer;
+    z-index:1100;
+}
 
-    color:black;
+.sidebar{
+    position:fixed;
+    top:0;
+    left:-280px;
+    width:270px;
+    height:100%;
+    background:#14232d;
+    padding:20px;
+    overflow-y:auto;
+    transition:0.3s ease;
+    z-index:1050;
+    box-shadow:5px 0 20px rgba(0,0,0,.4);
+}
 
+.sidebar.active{
+    left:0;
+}
+
+.close-btn{
+    float:right;
+    background:none;
+    border:none;
+    color:#fff;
+    font-size:28px;
+    cursor:pointer;
+}
+
+.sidebar h2{
+    color:#00eaff;
+    margin:40px 0 20px;
+    text-align:center;
+}
+
+.tool-btn{
+    display:block;
+    width:100%;
+    padding:14px;
+    margin:10px 0;
+    border:none;
+    border-radius:10px;
+    background:#203a43;
+    color:#fff;
+    text-align:left;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.tool-btn:hover{
+    background:#00eaff;
+    color:#000;
 }
 
 
-
-.tool-btn.active {
-
-    background:#00ff99;
-
-    color:black;
-
-}/* =======================================================
+/* =======================================================
    SARKAR SMART AI - HOMEPAGE UPGRADE
    Paste this at the END of style.css
 =======================================================*/
@@ -890,14 +844,165 @@ footer h3{
 
 }
 
-#imageResult img{
-
-    width:100%;
-
-    max-width:500px;
-
+.pdf-info{
+    background:#ffffff;
+    color:#000000;
+    padding:20px;
     border-radius:15px;
+    margin-top:20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
 
-    box-shadow:0 10px 20px rgba(0,0,0,.3);
+.pdf-info h3,
+.pdf-info h4,
+.pdf-info p{
+    color:#000000;
+}
 
+.pdf-preview{
+    background:#f8f9fa;
+    color:#000000;
+    max-height:500px;
+    overflow-y:auto;
+    border:1px solid #ccc;
+    padding:15px;
+    border-radius:10px;
+    white-space:pre-wrap;
+    line-height:1.7;
+    font-family:Arial, sans-serif;
+}
+
+/* ================= CHAT INPUT ================= */
+
+.input-area{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:15px;
+}
+
+#userInput{
+    flex:1;
+    padding:14px 18px;
+    border:1px solid #ccc;
+    border-radius:30px;
+    font-size:16px;
+    outline:none;
+}
+
+#micBtn{
+    width:50px;
+    height:50px;
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:20px;
+}
+
+#sendBtn{
+    padding:14px 22px;
+    border:none;
+    border-radius:30px;
+    cursor:pointer;
+    font-weight:bold;
+}
+/* ================= CHAT MESSAGES ================= */
+
+.user-message{
+    background:#0078ff;
+    color:#fff;
+    padding:12px 16px;
+    border-radius:18px 18px 4px 18px;
+    max-width:75%;
+    margin:12px 0 12px auto;
+    word-wrap:break-word;
+    line-height:1.6;
+}
+
+.bot-message{
+    background:#f3f4f6;
+    color:#111;
+    padding:12px 16px;
+    border-radius:18px 18px 18px 4px;
+    max-width:75%;
+    margin:12px 0;
+    word-wrap:break-word;
+    line-height:1.6;
+}
+
+.chat-box{
+    display:flex;
+    flex-direction:column;
+}
+#sendBtn,
+#micBtn{
+    transition:0.3s;
+}
+
+#sendBtn:hover{
+    transform:scale(1.05);
+}
+
+#micBtn:hover{
+    transform:scale(1.08);
+}
+/* ===== AI Formatting ===== */
+
+.bot-message h1{
+    font-size:28px;
+    margin:15px 0;
+}
+
+.bot-message h2{
+    font-size:24px;
+    margin:14px 0;
+}
+
+.bot-message h3{
+    font-size:20px;
+    margin:12px 0;
+}
+
+.bullet-item{
+    margin:6px 0;
+    padding-left:10px;
+}
+
+.number-item{
+    margin:6px 0;
+    padding-left:10px;
+}
+
+.bot-message pre{
+    background:#1e1e1e;
+    color:#ffffff;
+    padding:15px;
+    border-radius:10px;
+    overflow-x:auto;
+}
+
+.bot-message code{
+    font-family:Consolas, monospace;
+}
+/* ===== Message Actions ===== */
+
+.message-actions{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+}
+
+.copy-btn,
+.regen-btn{
+    padding:8px 14px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+    transition:0.2s;
+}
+
+.copy-btn:hover,
+.regen-btn:hover{
+    transform:scale(1.05);
 }

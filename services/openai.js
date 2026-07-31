@@ -118,7 +118,7 @@ Always behave as Sarkar Smart AI.
                 role: "system",
                 content: `Uploaded PDF Content:
 
-${pdfText.substring(0, 15000)}`
+${pdfText.substring(0, 2000)}`
             }
         ]
         : []),
