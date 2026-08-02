@@ -5,9 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sarkar Smart AI</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/script.js"></script>
+    
 </head>
 <body>
+
+    <!-- ================= CAMERA AI ================= -->
+
+<section class="camera-section" id="cameraSection" style="display:none;">
+
+    <h2>📷 Camera AI</h2>
+
+    <video id="cameraVideo" autoplay playsinline></video>
+
+    <canvas id="cameraCanvas" style="display:none;"></canvas>
+
+    <div class="camera-buttons">
+
+        <button id="openCameraBtn">
+            📷 Open Camera
+        </button>
+
+<button id="captureBtn">
+    📸 Capture
+</button>
+
+<button id="analyzeImageBtn">
+    🤖 Analyze Image
+</button>
+
+    </div>
+
+    <img id="capturedImage" style="display:none;max-width:100%;border-radius:12px;">
+
+
+    <div id="cameraResult"></div>
+
+</section>
 
 <!-- ================= MENU ================= -->
 
@@ -25,10 +60,6 @@
     💬 AI Chat
 </button>
 
-    <button class="tool-btn" id="newChatBtn">
-    ➕ New Chat
-</button>
-
 <button class="tool-btn" id="historyBtn">
     🕒 Chat History
 </button>
@@ -41,9 +72,13 @@
     🎨 Image Creator
 </button>
     
-    <button class="tool-btn">📷 Camera <small>(Coming Soon)</small></button>
+    <button class="tool-btn" id="cameraBtn">
+    📷 Camera AI
+</button>
 
-    <button class="tool-btn">💬 Feedback</button>
+<button class="tool-btn" id="quizBtn">
+    📝 Quiz Generator
+</button>
 
 </div>
 
@@ -68,54 +103,6 @@
 </header>
 
 
-<!-- ================= FEATURES ================= -->
-
-<section class="features">
-
-    <h2>✨ Features</h2>
-
-    <div class="feature-grid">
-
-        <div class="feature-card">
-            💬
-            <h3>AI Chat</h3>
-            <p>Ask anything instantly.</p>
-        </div>
-
-        <div class="feature-card">
-            📄
-            <h3>PDF Assistant</h3>
-            <p>Read & explain PDFs.</p>
-        </div>
-
-        <div class="feature-card">
-            🎨
-            <h3>Image Creator</h3>
-            <p>Create AI Images.</p>
-        </div>
-
-        <div class="feature-card">
-            🎤
-            <h3>Voice Chat</h3>
-            <p>Talk with AI.</p>
-        </div>
-
-        <div class="feature-card">
-            🌍
-            <h3>3 Languages</h3>
-            <p>Gujarati • Hindi • English</p>
-        </div>
-
-        <div class="feature-card">
-            📚
-            <h3>Study Material</h3>
-            <p>Notes, Papers & Resources.</p>
-        </div>
-
-    </div>
-
-</section>
-
 <!-- ================= CHAT ================= -->
 
 <main class="container">
@@ -134,23 +121,34 @@
 
     </div>
 
-    <div class="input-area">
+   <div class="input-area">
 
-        <input
-            type="text"
-            id="userInput"
-            placeholder="Type your question here...">
+    <button id="attachBtn" title="Attach">
+        ➕
+    </button>
 
-             <button id="micBtn">
+    <input
+        type="text"
+        id="userInput"
+        placeholder="Ask anything...">
+
+    <button id="micBtn">
         🎤
     </button>
 
-        <button id="sendBtn">
-            Send
-        </button>
+    <button id="sendBtn">
+        ➤
+    </button>
 
-    </div>
+</div>
 
+<!-- Hidden File Picker -->
+
+<input
+    type="file"
+    id="filePicker"
+    hidden
+    accept="image/*,.pdf,.doc,.docx,.txt">
 </main>
 
 <!-- ================= PDF ASSISTANT ================= -->
@@ -165,7 +163,9 @@
 
     <div id="pdfResult"></div>
 
-</section>
+    </section>
+
+<!-- ================= IMAGE GENERATOR ================= -->
 
 <section class="image-generator" id="imageGenerator" style="display:none;">
 
@@ -178,7 +178,7 @@
         <input
             type="text"
             id="imagePrompt"
-            placeholder="Example: A futuristic school with AI robots">
+            placeholder="Describe any image you want to create...">
 
         <button id="generateImageBtn">
             Generate Image
@@ -190,6 +190,95 @@
 
 </section>
 
+<!-- ================= QUIZ GENERATOR ================= -->
+
+<section class="quiz-generator" id="quizSection" style="display:none;">
+
+    <h2>📝 AI Quiz Generator</h2>
+
+    <input
+        type="text"
+        id="quizTopic"
+        placeholder="Enter Topic">
+
+    <select id="quizClass">
+
+        <option value="">Select Class</option>
+
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option>9</option>
+        <option>10</option>
+        <option>11</option>
+        <option>12</option>
+
+    </select>
+
+    <select id="quizSubject">
+
+        <option value="">Select Subject</option>
+
+        <option>Gujarati</option>
+        <option>Hindi</option>
+        <option>English</option>
+        <option>Mathematics</option>
+        <option>Science</option>
+        <option>Social Science</option>
+        <option>Computer</option>
+
+    </select>
+
+    <select id="quizDifficulty">
+
+        <option>Easy</option>
+
+        <option>Medium</option>
+
+        <option>Hard</option>
+
+    </select>
+
+    <input
+        type="number"
+        id="questionCount"
+        value="20"
+        min="1"
+        max="100">
+
+    <h3>Question Types</h3>
+
+    <label><input type="checkbox" id="mcq" checked> MCQ</label><br>
+
+    <label><input type="checkbox" id="fill"> Fill in the Blanks</label><br>
+
+    <label><input type="checkbox" id="match"> Match the Following</label><br>
+
+    <label><input type="checkbox" id="short"> Short Questions</label><br>
+
+    <label><input type="checkbox" id="long"> Long Questions</label><br><br>
+
+    <label>
+        <input type="checkbox" id="answerKey" checked>
+        Include Answer Key
+    </label>
+
+    <br><br>
+
+    <button id="generateQuizBtn">
+
+        📝 Generate Quiz
+
+    </button>
+
+    <div id="quizResult"></div>
+
+</section>
 <!-- ================= FOOTER ================= -->
 
 <footer>
@@ -213,6 +302,28 @@
 </div>
 
 <script type="module" src="script.js"></script>
+
+
+<div class="attach-menu" id="attachMenu">
+
+    <button id="cameraAttach">
+        📷 Camera
+    </button>
+
+    <button id="galleryAttach">
+        🖼 Gallery
+    </button>
+
+    <button id="pdfAttach">
+        📄 PDF
+    </button>
+
+    <button id="fileAttach">
+        📁 File
+    </button>
+
+</div>
+
 
 </body>
 </html>

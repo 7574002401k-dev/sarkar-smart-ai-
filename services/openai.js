@@ -8,11 +8,30 @@ const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function getAIResponse(message, pdfText = "") {
+export async function getAIResponse(
+    message,
+    pdfText = "",
+    image = null
+) {
 
     try {
 
         const userId = "default";
+
+        const msg = message.trim().toLowerCase();
+
+const instantReplies = {
+    "hi": "👋 Hello! How can I help you today?",
+    "hello": "👋 Hello! How can I help you today?",
+    "hey": "👋 Hi! Welcome to Sarkar Smart AI.",
+    "thanks": "😊 You're welcome!",
+    "thank you": "😊 You're welcome!",
+    "bye": "👋 Goodbye! Have a great day!"
+};
+
+if (instantReplies[msg]) {
+    return instantReplies[msg];
+}
 
         // Save User Message
         addMessage(
@@ -91,9 +110,22 @@ Math:
 Show step-by-step solution.
 
 Quiz:
-If user asks for quiz,
-give only questions first.
-Check answers after student replies.
+If user asks Quiz,
+generate beautiful markdown.
+
+If user asks Table,
+use markdown table.
+
+If user asks Code,
+always use markdown code block.
+
+If user asks Prayer,
+Poem,
+Speech,
+Letter,
+always use proper formatting.
+
+Never answer in one paragraph.
 
 PDF RULES:
 
@@ -123,12 +155,32 @@ ${pdfText.substring(0, 2000)}`
         ]
         : []),
 
-    ...history
+    
+
+...history,
+
+...(image
+    ? [{
+        role: "user",
+        content: [
+            {
+                type: "text",
+                text: message
+            },
+            {
+                type: "image_url",
+                image_url: {
+                    url: image
+                }
+            }
+        ]
+    }]
+    : []),
 
 ],
 
             temperature: 0.3,
-            max_tokens: 1500
+            max_tokens:2500
 
         });
 
