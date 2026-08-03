@@ -33,7 +33,7 @@ if (generateImageBtn) {
 
         try {
 
-            const response = await fetch("http://localhost:3000/generate-image", {
+            const response = await fetch("/generate-image", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -378,7 +378,7 @@ async function sendMessage() {
 
     try {
 
-        const response = await fetch("http://localhost:3000/chat", {
+        const response = await fetch("/chat", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -794,7 +794,7 @@ if (analyzeImageBtn) {
         try {
 
             const response =
-            await fetch("http://localhost:3000/analyze-image", {
+            await fetch("/analyze-image", {
 
                 method: "POST",
 
