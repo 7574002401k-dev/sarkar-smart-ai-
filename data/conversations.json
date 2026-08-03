@@ -2,16 +2,6 @@
   "default": [
     {
       "role": "user",
-      "content": "હેલો હેલો",
-      "time": "2026-08-01T16:01:37.130Z"
-    },
-    {
-      "role": "assistant",
-      "content": "હેલો! તમે કઈ રીતે મદદ માંગવા માંગો છો? તમે જે કન્સોલ સ્ક્રીનશોટ મોકલ્યો છે તે જોઈને લાગે છે કે તમે જાવાસ્ક્રિપ્ટમાં કોઈ ડોક્યુમેન્ટ એલિમેન્ટને ગેટ કરી રહ્યા છો. શું તમને આમાં મદદ જોઈએ છે?",
-      "time": "2026-08-01T16:01:40.078Z"
-    },
-    {
-      "role": "user",
       "content": "pdf me shu shu che",
       "time": "2026-08-01T16:02:46.327Z"
     },
@@ -99,6 +89,16 @@
       "role": "assistant",
       "content": "Good morning! How can I assist you today?",
       "time": "2026-08-03T01:11:04.602Z"
+    },
+    {
+      "role": "user",
+      "content": "good afternoon",
+      "time": "2026-08-03T05:41:15.090Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Good afternoon! How can I help you today?",
+      "time": "2026-08-03T05:41:18.474Z"
     }
   ]
 }
