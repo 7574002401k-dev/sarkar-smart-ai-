@@ -400,11 +400,16 @@ async function sendMessage() {
 
         addBotMessage(chatBox, data.reply);
 
-        saveChat({
-    question: message,
-    answer: data.reply,
-    time: new Date().toLocaleString()
-});
+      saveChat(`
+<div class="user-message">
+👤 ${message}
+</div>
+
+<div class="bot-message">
+🤖 ${data.reply}
+</div>
+`);
+
         // speak(data.reply);
 
     } catch (error) {
@@ -455,14 +460,22 @@ JSON.parse(localStorage.getItem("chatHistory")) || [];
 if(historyBtn){
 
 historyBtn.onclick = () => {
-    historyPanel.classList.toggle("active");
+
     loadHistory();
 
+    historyPanel.classList.add("active");
+
+    if (container) container.style.display = "none";
+    if (pdfSection) pdfSection.style.display = "none";
+    if (imageGenerator) imageGenerator.style.display = "none";
+    if (cameraSection) cameraSection.style.display = "none";
+    if (quizSection) quizSection.style.display = "none";
+
+};
     console.log("History Button Clicked");
     console.log(historyPanel.className);
 };
 
-}
 
 
 
@@ -520,58 +533,46 @@ JSON.stringify(chats)
 }
 
 
+function loadHistory() {
 
-function loadHistory(){
+    historyList.innerHTML = "";
 
+    chats.forEach(chat => {
 
-historyList.innerHTML="";
+        let div = document.createElement("div");
+        div.className = "history-item";
 
+        // Safe text
+        let preview = "";
 
-chats.forEach(chat=>{
+        if (typeof chat.text === "string") {
+            preview = chat.text.substring(0, 80);
+        } else if (Array.isArray(chat.text)) {
+            preview = chat.text.join(" ").substring(0, 80);
+        } else {
+            preview = JSON.stringify(chat.text).substring(0, 80);
+        }
 
+        div.innerHTML = `
+            <b>${chat.time || ""}</b>
+            <br><br>
+            ${preview}...
+        `;
 
-let div=document.createElement("div");
+        div.onclick = () => {
+            chatBox.innerHTML =
+                typeof chat.text === "string"
+                    ? chat.text
+                    : JSON.stringify(chat.text, null, 2);
 
+            historyPanel.classList.remove("active");
+        };
 
-div.className="history-item";
+        historyList.appendChild(div);
 
-
-div.innerHTML=
-
-`
-
-<b>${chat.time}</b>
-
-<br><br>
-
-${chat.text.substring(0,80)}...
-
-`;
-
-
-
-div.onclick=()=>{
-
-
-chatBox.innerHTML=chat.text;
-
-
-historyPanel.classList.remove("active");
-
-
-};
-
-
-
-historyList.appendChild(div);
-
-
-
-});
-
+    });
 
 }
-
 
 
 
@@ -728,6 +729,34 @@ if (pdfBtn) {
 
 /* ================= CAMERA AI ================= */
 
+let cameraStream = null;
+
+openCameraBtn.onclick = async () => {
+
+    if (cameraStream) {
+        return;
+    }
+
+    try {
+
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: true
+        });
+
+        video.srcObject = cameraStream;
+
+    } catch (err) {
+
+        console.error(err);
+
+        if (err.name === "NotAllowedError") {
+            alert("Please allow camera permission.");
+        }
+
+    }
+
+};
+
 if (cameraBtn) {
 
     cameraBtn.onclick = () => {
@@ -807,7 +836,6 @@ if (analyzeImageBtn) {
 
 } 
 
-let cameraStream = null;
 
 if (openCameraBtn) {
 
@@ -898,7 +926,7 @@ if (chatBtn) {
         if (pdfSection) pdfSection.style.display = "none";
         if (imageGenerator) imageGenerator.style.display = "none";
         if (cameraSection) cameraSection.style.display = "none";
-        if (historyPanel) historyPanel.style.display = "none";
+        if (historyPanel) historyPanel.classList.remove("active");
         if (quizSection) quizSection.style.display = "none";
 
         sidebar.classList.remove("active");
