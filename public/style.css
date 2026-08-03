@@ -1,3 +1,14 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,body{
+    width:100%;
+    overflow-x:hidden;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -20,6 +31,27 @@ body {
     justify-content:center;
     gap:15px;
     padding:15px 20px;
+    width:100%;
+    box-sizing:border-box;
+    text-align:left;
+}
+
+.header div{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.header h1{
+    margin:0;
+    font-size:38px;
+    color:#00eaff;
+}
+
+.header p{
+    margin:5px 0 0;
+    font-size:18px;
+    line-height:1.4;
 }
 
 
@@ -41,7 +73,42 @@ body {
     font-size: 18px;
 }
 
+.header{
+    width:100%;
+    box-sizing:border-box;
+}
 
+.header h1{
+    margin:0;
+}
+
+.header p{
+    margin:5px 0 0;
+    line-height:1.4;
+}
+
+@media (max-width:768px){
+
+    .header{
+        justify-content:flex-start;
+        gap:12px;
+        padding:15px;
+    }
+
+    .logo{
+        width:55px;
+        height:55px;
+    }
+
+    .header h1{
+        font-size:28px;
+    }
+
+    .header p{
+        font-size:15px;
+    }
+
+}
 
 /* Main Container */
 
@@ -51,7 +118,8 @@ body {
     margin:20px auto;
     display:flex;
     flex-direction:column;
-    height:calc(100vh - 170px);
+    min-height:calc(100vh - 170px);
+    overflow:hidden;
 }
 
 
@@ -154,18 +222,33 @@ footer{
     color:#777;
 }
 
-
 /* Mobile */
 
 @media (max-width:768px){
 
+    html,
+    body{
+        overflow-x:hidden;
+    }
+
     .container{
-        width:98%;
-        height:calc(100vh - 150px);
+        width:100%;
+        margin:10px auto;
+        padding:0 10px;
+        min-height:calc(100vh - 140px);
+    }
+
+    .header{
+        padding:12px;
+        gap:10px;
     }
 
     .header h1{
         font-size:24px;
+    }
+
+    .header p{
+        font-size:14px;
     }
 
     .logo{
@@ -173,7 +256,17 @@ footer{
         height:50px;
     }
 
+    .chat-box{
+        padding:15px;
+    }
+
+    .input-area{
+        gap:6px;
+    }
+
     #userInput{
+        width:100%;
+        min-width:0;
         font-size:15px;
     }
 

@@ -2,16 +2,6 @@
   "default": [
     {
       "role": "user",
-      "content": "what is in image",
-      "time": "2026-08-01T16:01:18.841Z"
-    },
-    {
-      "role": "assistant",
-      "content": "The image shows a screenshot of a browser's developer console (Console tab). It contains the following:\n\n- A log message: \"PDF MODULE LOADED\"\n- A JavaScript command: `document.getElementById(\"historyPanel\")`\n- The console's response to the command, which is an HTML element:\n  ```html\n  <div class=\"history-panel active\" id=\"historyPanel\">...</div>\n  ```\n\nThis means the console executed a command to get the HTML element with the ID \"historyPanel\" and returned a `<div>` element with the class \"history-panel active\" and the same ID. The \"...\" indicates that the content inside the `<div>` is not fully shown.",
-      "time": "2026-08-01T16:01:22.048Z"
-    },
-    {
-      "role": "user",
       "content": "હેલો હેલો",
       "time": "2026-08-01T16:01:37.130Z"
     },
@@ -99,6 +89,16 @@
       "role": "assistant",
       "content": "ગુડ મોર્નિંગ! કેમ છો? આજે શું શીખવા કે સમજવા માંગો છો?",
       "time": "2026-08-02T23:43:05.672Z"
+    },
+    {
+      "role": "user",
+      "content": "good morning",
+      "time": "2026-08-03T01:11:02.136Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Good morning! How can I assist you today?",
+      "time": "2026-08-03T01:11:04.602Z"
     }
   ]
 }
