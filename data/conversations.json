@@ -2,26 +2,6 @@
   "default": [
     {
       "role": "user",
-      "content": "pdf me shu shu che",
-      "time": "2026-08-01T16:02:46.327Z"
-    },
-    {
-      "role": "assistant",
-      "content": "આ PDF માં \"Some Basic Concepts of Chemistry\" વિષયક Grade 9 માટેનું Chemistry નું Lecture No. 1 છે. તેમાં નીચેના મુદ્દાઓ આવ્યાં છે:\n\n1. Chemistry શું છે? - Chemistry એ matter ના composition, structure અને properties નો અભ્યાસ છે.\n2. Chemistry ને atoms અને molecules ની science કહેવામાં આવે છે.\n3. Chemistry ના વિવિધ ક્ષેત્રો અને તેની મહત્વતા:\n   - Environmental Science\n   - Pharmaceutical Science\n   - Geological Science\n   - Biological Science\n   - Physical Science\n   - Material Science\n   - Computer Science\n4. Chemistry કયા ક્ષેત્રોમાં ઉપયોગી છે તે અંગે પ્રશ્નો અને જવાબો.\n5. Universe ની classification:\n   - Matter અને Energy\n   - Matter ની physical classification (Solid વગેરે)\n6. Matter ની વ્યાખ્યા: જે કંઈ mass ધરાવે અને space લે છે તે matter છે.\n\nઆ PDF માં chemistry ના મૂળભૂત concepts, universe ની classification અને matter ની physical classification વિશે માહિતી આપવામાં આવી છે.",
-      "time": "2026-08-01T16:02:53.495Z"
-    },
-    {
-      "role": "user",
-      "content": "goog morning",
-      "time": "2026-08-02T00:16:41.791Z"
-    },
-    {
-      "role": "assistant",
-      "content": "Good morning! કેમ છો? આજે તમને કેવી રીતે મદદ કરી શકું?",
-      "time": "2026-08-02T00:16:43.710Z"
-    },
-    {
-      "role": "user",
       "content": "ગુડ મોર્નિંગ",
       "time": "2026-08-02T00:18:21.086Z"
     },
@@ -99,6 +79,26 @@
       "role": "assistant",
       "content": "Good afternoon! How can I help you today?",
       "time": "2026-08-03T05:41:18.474Z"
+    },
+    {
+      "role": "user",
+      "content": "હલો",
+      "time": "2026-08-03T06:21:50.926Z"
+    },
+    {
+      "role": "assistant",
+      "content": "હેલો! કેમ છો? આજે તમને કેવી રીતે મદદ કરી શકું?",
+      "time": "2026-08-03T06:21:53.602Z"
+    },
+    {
+      "role": "user",
+      "content": "NCERT Class 8 Science Chapter 5",
+      "time": "2026-08-03T13:35:59.138Z"
+    },
+    {
+      "role": "assistant",
+      "content": "**NCERT Class 8 Science - Chapter 5: Coal and Petroleum**\n\n---\n\n### Introduction  \nThis chapter explains the formation, extraction, and uses of coal and petroleum, which are important fossil fuels. It also discusses their advantages, disadvantages, and the need for conservation.\n\n---\n\n### Main Topics Covered:\n\n#### 1. **What are Fossil Fuels?**  \n- Fossil fuels are natural fuels formed from the remains of dead plants and animals over millions of years under high pressure and temperature.  \n- Examples: Coal, Petroleum, Natural Gas.\n\n#### 2. **Coal**  \n- Formed from dead plants in swampy areas millions of years ago.  \n- Types of coal: Peat, Lignite, Bituminous, Anthracite (from low to high carbon content).  \n- Uses: Fuel in industries, electricity generation, making coke for steel industry.\n\n#### 3. **Petroleum**  \n- Formed from dead marine animals and plants under the sea.  \n- Extracted by drilling wells.  \n- Crude oil is refined to get various products like petrol, diesel, kerosene, lubricating oil, paraffin wax, etc.  \n- Uses: Fuel for vehicles, heating, cooking, making plastics and chemicals.\n\n#### 4. **Natural Gas**  \n- Found along with petroleum in underground reservoirs.  \n- Used as fuel for cooking and electricity generation.\n\n#### 5. **Environmental Impact**  \n- Burning fossil fuels releases pollutants causing air pollution and global warming.  \n- Mining and drilling can cause land degradation and water pollution.\n\n#### 6. **Conservation of Fossil Fuels**  \n- Use alternative energy sources like solar, wind, and hydro power.  \n- Use energy-efficient appliances and vehicles.  \n- Reduce wastage and recycle.\n\n---\n\n### Conclusion  \nCoal and petroleum are vital energy sources but are limited and polluting. It is important to use them wisely and explore renewable energy options for a sustainable future.\n\n---\n\nIf you want, I can provide **summary**, **important questions**, or **MCQs** from this chapter. Let me know!",
+      "time": "2026-08-03T13:36:06.996Z"
     }
   ]
 }

@@ -5,6 +5,7 @@ import OpenAI from "openai";
 import path from "path";
 import { fileURLToPath } from "url";
 import { getAIResponse } from "./services/openai.js";
+import { governmentSearch } from "./government/search.js";
 
 dotenv.config();
 
@@ -45,8 +46,6 @@ app.get("/", (req, res) => {
 // CHAT API
 // ===============================
 
-
-
 app.post("/chat", async (req, res) => {
 
     try {
@@ -61,23 +60,46 @@ app.post("/chat", async (req, res) => {
             });
         }
 
+        // ===============================
+        // GOVERNMENT SEARCH
+        // ===============================
+
+        console.log("Government Search Called:", userMessage);
+
+        const govResult = await governmentSearch(userMessage);
+
+        console.log("Government Result:", govResult);
+        
+        if (govResult) {
+            return res.json({
+                reply: govResult
+            });
+        }
+
+        // ===============================
+        // OPENAI
+        // ===============================
+
         const aiReply = await getAIResponse(
-    userMessage,
-    pdfText,
-    image
-);
+            userMessage,
+            pdfText,
+            image
+        );
+
         res.json({
             reply: aiReply
         });
 
-} catch (error) {
-    console.error("CHAT ERROR");
-    console.error(error);
+    } catch (error) {
 
-    res.status(500).json({
-        reply: "❌ Sarkar Smart AI Server Error"
-    });
-}
+        console.error("CHAT ERROR");
+        console.error(error);
+
+        res.status(500).json({
+            reply: "❌ Sarkar Smart AI Server Error"
+        });
+
+    }
 
 });
 

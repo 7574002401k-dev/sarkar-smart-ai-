@@ -726,55 +726,112 @@ if (pdfBtn) {
     };
 
 }
-
 /* ================= CAMERA AI ================= */
 
 let cameraStream = null;
+let facingMode = "environment"; // Default = Back Camera
 
-openCameraBtn.onclick = async () => {
-
-    if (cameraStream) {
-        return;
-    }
+async function startCamera() {
 
     try {
 
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+        }
+
         cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: true
+
+            video: {
+                facingMode: facingMode
+            }
+
         });
 
-        video.srcObject = cameraStream;
-
-    } catch (err) {
-
-        console.error(err);
-
-        if (err.name === "NotAllowedError") {
-            alert("Please allow camera permission.");
-        }
+        cameraVideo.srcObject = cameraStream;
 
     }
 
-};
+    catch (err) {
 
-if (cameraBtn) {
+        console.error(err);
 
-    cameraBtn.onclick = () => {
+        alert("Camera permission denied.");
 
-        container.style.display = "none";
-        pdfSection.style.display = "none";
-        imageGenerator.style.display = "none";
-        cameraSection.style.display = "block";
+    }
 
-        sidebar.classList.remove("active");
+}
 
-        cameraSection.scrollIntoView({
-            behavior: "smooth"
-        });
+// Open Camera
+
+if (openCameraBtn) {
+
+    openCameraBtn.onclick = () => {
+
+        startCamera();
 
     };
 
 }
+
+// Switch Camera
+
+const switchCameraBtn =
+document.getElementById("switchCameraBtn");
+
+if (switchCameraBtn) {
+
+    switchCameraBtn.onclick = () => {
+
+        facingMode =
+        facingMode === "environment"
+        ? "user"
+        : "environment";
+
+        startCamera();
+
+    };
+
+}
+
+// Capture
+
+if (captureBtn) {
+
+    captureBtn.onclick = () => {
+
+        const canvas =
+        document.getElementById("cameraCanvas");
+
+        canvas.width = cameraVideo.videoWidth;
+        canvas.height = cameraVideo.videoHeight;
+
+        const ctx =
+        canvas.getContext("2d");
+
+        ctx.drawImage(
+            cameraVideo,
+            0,
+            0
+        );
+
+        capturedImage.src =
+        canvas.toDataURL("image/png");
+
+        capturedImage.style.display = "block";
+
+        if (cameraStream) {
+
+            cameraStream.getTracks().forEach(track => track.stop());
+
+            cameraVideo.srcObject = null;
+
+        }
+
+    };
+
+}
+
+// Analyze
 
 if (analyzeImageBtn) {
 
@@ -791,6 +848,9 @@ if (analyzeImageBtn) {
         cameraResult.innerHTML =
         "🤖 Analyzing image...";
 
+        const prompt =
+        document.getElementById("cameraPrompt")?.value || "";
+
         try {
 
             const response =
@@ -799,14 +859,14 @@ if (analyzeImageBtn) {
                 method: "POST",
 
                 headers: {
-
-                    "Content-Type":"application/json"
-
+                    "Content-Type": "application/json"
                 },
 
                 body: JSON.stringify({
 
-                    image: capturedImage.src
+                    image: capturedImage.src,
+
+                    prompt: prompt
 
                 })
 
@@ -823,7 +883,7 @@ if (analyzeImageBtn) {
 
         }
 
-        catch(err){
+        catch (err) {
 
             console.error(err);
 
@@ -831,61 +891,6 @@ if (analyzeImageBtn) {
             "❌ Unable to analyze image.";
 
         }
-
-    };
-
-} 
-
-
-if (openCameraBtn) {
-
-    openCameraBtn.onclick = async () => {
-
-        try {
-
-            cameraStream = await navigator.mediaDevices.getUserMedia({
-                video: true
-            });
-
-            cameraVideo.srcObject = cameraStream;
-
-        } catch (err) {
-
-            alert("Camera permission denied.");
-
-            console.error(err);
-
-        }
-
-    };
-
-}
-
-if (captureBtn) {
-
-    captureBtn.onclick = () => {
-
-        const canvas = document.getElementById("cameraCanvas");
-
-        canvas.width = cameraVideo.videoWidth;
-        canvas.height = cameraVideo.videoHeight;
-
-        const ctx = canvas.getContext("2d");
-
-        ctx.drawImage(cameraVideo, 0, 0);
-
-        capturedImage.src = canvas.toDataURL("image/png");
-        capturedImage.style.display = "block";
-
-        // Stop Camera
-
-if (cameraStream) {
-
-    cameraStream.getTracks().forEach(track => track.stop());
-
-    cameraVideo.srcObject = null;
-
-}
 
     };
 
