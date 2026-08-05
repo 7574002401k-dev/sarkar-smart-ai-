@@ -726,12 +726,15 @@ if (pdfBtn) {
     };
 
 }
+
 /* ================= CAMERA AI ================= */
 
 let cameraStream = null;
 let facingMode = "environment"; // Default = Back Camera
 
 async function startCamera() {
+
+    console.log("✅ startCamera() called");
 
     try {
 
@@ -765,9 +768,11 @@ async function startCamera() {
 
 if (openCameraBtn) {
 
-    openCameraBtn.onclick = () => {
+    openCameraBtn.onclick = async () => {
 
-        startCamera();
+        console.log("📷 Open Camera Button Clicked");
+
+        await startCamera();
 
     };
 
