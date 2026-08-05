@@ -87,6 +87,32 @@ const menuBtn = document.getElementById("menuBtn");
 const closeBtn = document.getElementById("closeBtn");
 const sidebar = document.getElementById("sidebar");
 
+// ================= SIDEBAR OPEN / CLOSE =================
+
+if (menuBtn) {
+
+    menuBtn.addEventListener("click", () => {
+
+        console.log("☰ Menu Open");
+
+        sidebar.classList.add("active");
+
+    });
+
+}
+
+if (closeBtn) {
+
+    closeBtn.addEventListener("click", () => {
+
+        console.log("✖ Menu Close");
+
+        sidebar.classList.remove("active");
+
+    });
+
+}
+
 const startBtn = document.getElementById("startChatBtn");
 
 const pdfBtn = document.getElementById("pdfBtn");
@@ -149,6 +175,7 @@ const quizSection = document.getElementById("quizSection");
 // ================= CAMERA =================
 
 const cameraBtn = document.getElementById("cameraBtn");
+console.log("cameraBtn =", cameraBtn);
 const cameraSection = document.getElementById("cameraSection");
 const cameraVideo = document.getElementById("cameraVideo");
 const openCameraBtn = document.getElementById("openCameraBtn");
@@ -194,239 +221,6 @@ if (galleryAttach) {
 
 }
 
-// ================= PDF =================
-
-if (pdfAttach) {
-
-    pdfAttach.onclick = () => {
-
-        attachMenu.style.display = "none";
-
-        filePicker.accept = ".pdf";
-
-        filePicker.click();
-
-    };
-
-}
-
-// ================= FILE =================
-
-if (fileAttach) {
-
-    fileAttach.onclick = () => {
-
-        attachMenu.style.display = "none";
-
-        filePicker.accept =
-        ".doc,.docx,.txt,.xlsx,.csv";
-
-        filePicker.click();
-
-    };
-
-}
-
-// ================= CAMERA =================
-
-if (cameraAttach) {
-
-    cameraAttach.onclick = () => {
-
-        attachMenu.style.display = "none";
-
-        cameraBtn.click();
-
-    };
-
-}
-
-// ================= FILE PICKER =================
-
-if (filePicker) {
-
-    filePicker.onchange = () => {
-
-        const file = filePicker.files[0];
-
-        if (!file) return;
-
-        // IMAGE
-        if (file.type.startsWith("image/")) {
-
-            const reader = new FileReader();
-
-reader.onload = () => {
-
-    selectedImage = reader.result;   // ⭐ આ નવી Line ઉમેરો
-
-    const image = reader.result;
-
-    chatBox.innerHTML += `
-        <div class="user-message">
-            👤<br>
-            <img src="${image}"
-                 style="max-width:250px;border-radius:12px;margin-top:10px;">
-        </div>
-    `;
-
-    scrollBottom(chatBox);
-
-};
-
-reader.readAsDataURL(file);
-
-        }
-
-    };
-
-}
-
-
-
-/* ================= SIDEBAR ================= */
-
-
-if(menuBtn){
-
-menuBtn.onclick = () => {
-
-    sidebar.classList.add("active");
-
-};
-
-}
-
-
-if(closeBtn){
-
-closeBtn.onclick = () => {
-
-    sidebar.classList.remove("active");
-
-};
-
-}
-
-
-
-/* ================= START CHAT ================= */
-
-
-if(startBtn){
-
-startBtn.onclick = () => {
-
-
-    container.scrollIntoView({
-
-        behavior:"smooth"
-
-    });
-
-
-    userInput.focus();
-
-
-};
-
-}
-
-
-
-/* ================= SEND MESSAGE ================= */
-
-
-if(sendBtn){
-
-sendBtn.onclick = sendMessage;
-
-}
-
-
-if(userInput){
-
-userInput.addEventListener("keypress",(e)=>{
-
-
-    if(e.key==="Enter"){
-
-        sendMessage();
-
-    }
-
-
-});
-
-}
-
-
-
-async function sendMessage() {
-
-    const message = userInput.value.trim();
-
-    lastUserMessage = message;
-
-    if (!message) return;
-
-    addUserMessage(chatBox, message);
-
-    userInput.value = "";
-
-    const loading = addTyping(chatBox);
-
-    try {
-
-        const response = await fetch("/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-    message,
-    pdfText: currentPdfText,
-    image: selectedImage
-})
-        });
-
-        if (!response.ok) {
-            throw new Error(`Server Error: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        loading.remove();
-
-        addBotMessage(chatBox, data.reply);
-
-      saveChat(`
-<div class="user-message">
-👤 ${message}
-</div>
-
-<div class="bot-message">
-🤖 ${data.reply}
-</div>
-`);
-
-        // speak(data.reply);
-
-    } catch (error) {
-
-        console.error(error);
-
-        loading.remove();
-
-        addBotMessage(chatBox, "❌ " + error.message);
-
-    }
-
-    scrollBottom(chatBox);
-}
-
-
-
 
 /* ================= CHAT HISTORY ================= */
 
@@ -457,37 +251,14 @@ JSON.parse(localStorage.getItem("chatHistory")) || [];
 
 
 
+
 if(historyBtn){
 
-historyBtn.onclick = () => {
+    historyBtn.onclick=()=>{
 
-    loadHistory();
+        showSection("history");
 
-    historyPanel.classList.add("active");
-
-    if (container) container.style.display = "none";
-    if (pdfSection) pdfSection.style.display = "none";
-    if (imageGenerator) imageGenerator.style.display = "none";
-    if (cameraSection) cameraSection.style.display = "none";
-    if (quizSection) quizSection.style.display = "none";
-
-};
-    console.log("History Button Clicked");
-    console.log(historyPanel.className);
-};
-
-
-
-
-if(closeHistory){
-
-closeHistory.onclick=()=>{
-
-
-historyPanel.classList.remove("active");
-
-
-};
+    };
 
 }
 
@@ -576,69 +347,43 @@ function loadHistory() {
 
 
 
-
 /* ================= VOICE ================= */
 
-
-
 const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
 
-window.SpeechRecognition ||
+if (SpeechRecognition){
 
-window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
 
+    recognition.lang = "gu-IN";
 
+    recognition.continuous = false;
 
-if(SpeechRecognition){
+    if (micBtn) {
 
+        micBtn.onclick = () => {
 
-const recognition = new SpeechRecognition();
+            recognition.start();
 
+        };
 
-recognition.lang="gu-IN";
+    }
 
+    recognition.onresult = (event) => {
 
-recognition.continuous=false;
+        userInput.value =
+            event.results[0][0].transcript;
 
+        if (typeof sendMessage === "function") {
+            sendMessage();
+        }
 
-
-if(micBtn){
-
-
-micBtn.onclick=()=>{
-
-
-recognition.start();
-
-
-};
-
-}
-
-
-
-
-recognition.onresult=(event)=>{
-
-
-userInput.value =
-
-event.results[0][0].transcript;
-
-
-sendMessage();
-
-
-};
-
-
+    };
+//
 
 }
-
-
-
-
-
 
 /* ================= TEXT TO SPEECH ================= */
 
@@ -670,64 +415,113 @@ window.speechSynthesis.speak(speech);
 
 }
 
+// ======================================================
+// SHOW ONLY ONE SECTION
+// ======================================================
 
+function showSection(section){
+
+    if(container) container.style.display="none";
+
+    if(pdfSection) pdfSection.style.display="none";
+
+    if(imageGenerator) imageGenerator.style.display="none";
+
+    if(cameraSection) cameraSection.style.display="none";
+
+    if(quizSection) quizSection.style.display="none";
+
+    if(historyPanel)
+        historyPanel.classList.remove("active");
+
+    switch(section){
+
+        case "chat":
+
+            container.style.display="flex";
+
+        break;
+
+        case "camera":
+
+            cameraSection.style.display="block";
+
+        break;
+
+        case "pdf":
+
+            pdfSection.style.display="block";
+
+        break;
+
+        case "image":
+
+            imageGenerator.style.display="block";
+
+        break;
+
+        case "quiz":
+
+            quizSection.style.display="block";
+
+        break;
+
+        case "history":
+
+            loadHistory();
+
+            historyPanel.classList.add("active");
+
+        break;
+
+    }
+
+    sidebar.classList.remove("active");
+
+}
 
 
 
 /* ================= IMAGE CREATOR ================= */
 
 
-
 if(imageCreatorBtn){
 
+    imageCreatorBtn.onclick=()=>{
 
-imageCreatorBtn.onclick=()=>{
+        showSection("image");
 
-
-container.style.display="none";
-
-
-imageGenerator.style.display="block";
-
-
-sidebar.classList.remove("active");
-
-
-
-imageGenerator.scrollIntoView({
-
-behavior:"smooth"
-
-});
-
-
-};
-
+    };
 
 }
 
 
 /* ================= PDF ASSISTANT ================= */
 
-if (pdfBtn) {
+if(pdfBtn){
 
-    pdfBtn.onclick = () => {
+    pdfBtn.onclick=()=>{
 
-        container.style.display = "none";
-        imageGenerator.style.display = "none";
-        pdfSection.style.display = "block";
-
-        sidebar.classList.remove("active");
-
-        pdfSection.scrollIntoView({
-            behavior: "smooth"
-        });
+        showSection("pdf");
 
     };
 
 }
 
+
 /* ================= CAMERA AI ================= */
+
+if(cameraBtn){
+
+    cameraBtn.onclick=()=>{
+
+        console.log("📷 Camera Open");
+
+        showSection("camera");
+
+    };
+
+}
 
 let cameraStream = null;
 let facingMode = "environment"; // Default = Back Camera
@@ -770,7 +564,9 @@ if (openCameraBtn) {
 
     openCameraBtn.onclick = async () => {
 
-        console.log("📷 Open Camera Button Clicked");
+        console.log("📷 Camera button clicked");
+
+        alert("Open Camera Button Clicked");
 
         await startCamera();
 
@@ -903,46 +699,19 @@ if (analyzeImageBtn) {
 
 // ================= QUIZ GENERATOR =================
 
-if (quizBtn) {
-
-    quizBtn.onclick = () => {
-
-        if (container) container.style.display = "none";
-        if (pdfSection) pdfSection.style.display = "none";
-        if (imageGenerator) imageGenerator.style.display = "none";
-        if (cameraSection) cameraSection.style.display = "none";
-        if (historyPanel) historyPanel.style.display = "none";
-        if (quizSection) quizSection.style.display = "block";
-
-        sidebar.classList.remove("active");
-
-    };
-
-}
-        // Close Sidebar
-
-        sidebar.classList.remove("active");
-
-    ;
-
 
 /* ================= AI CHAT ================= */
 
-if (chatBtn) {
+if(chatBtn){
 
-    chatBtn.onclick = () => {
+    chatBtn.onclick=()=>{
 
-        if (container) container.style.display = "block";
-        if (pdfSection) pdfSection.style.display = "none";
-        if (imageGenerator) imageGenerator.style.display = "none";
-        if (cameraSection) cameraSection.style.display = "none";
-        if (historyPanel) historyPanel.classList.remove("active");
-        if (quizSection) quizSection.style.display = "none";
-
-        sidebar.classList.remove("active");
+        showSection("chat");
 
         container.scrollIntoView({
-            behavior: "smooth"
+
+            behavior:"smooth"
+
         });
 
     };

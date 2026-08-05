@@ -10,16 +10,80 @@
     
 </head>
 <body>
-
-    <!-- ================= CAMERA AI ================= -->
+    
+<!-- ================= AI CAMERA ================= -->
 
 <section class="camera-section" id="cameraSection" style="display:none;">
 
-    <h2>📷 Camera AI</h2>
+    <div class="camera-header">
 
-    <video id="cameraVideo" autoplay playsinline></video>
+        <h2>🤖 AI Camera</h2>
 
-    <canvas id="cameraCanvas" style="display:none;"></canvas>
+        <button id="closeCameraBtn">✖</button>
+
+    </div>
+
+    <!-- AI Features -->
+
+    <div class="ai-feature-grid">
+
+        <button class="ai-feature active" data-feature="lens">
+            🔍
+            <span>Lens</span>
+        </button>
+
+        <button class="ai-feature" data-feature="math">
+            🧮
+            <span>Math Solver</span>
+        </button>
+
+        <button class="ai-feature" data-feature="ocr">
+            📄
+            <span>OCR</span>
+        </button>
+
+        <button class="ai-feature" data-feature="translate">
+            🌐
+            <span>Translate</span>
+        </button>
+
+        <button class="ai-feature" data-feature="plant">
+            🌿
+            <span>Plant</span>
+        </button>
+
+        <button class="ai-feature" data-feature="animal">
+            🐶
+            <span>Animal</span>
+        </button>
+
+        <button class="ai-feature" data-feature="homework">
+            📚
+            <span>Homework</span>
+        </button>
+
+        <button class="ai-feature" data-feature="diagram">
+            🧪
+            <span>Diagram</span>
+        </button>
+
+    </div>
+
+    <!-- Camera -->
+
+    <video
+        id="cameraVideo"
+        autoplay
+        playsinline
+        muted>
+    </video>
+
+    <canvas
+        id="cameraCanvas"
+        style="display:none;">
+    </canvas>
+
+    <!-- Camera Buttons -->
 
     <div class="camera-buttons">
 
@@ -27,18 +91,38 @@
             📷 Open Camera
         </button>
 
-<button id="captureBtn">
-    📸 Capture
-</button>
+        <button id="switchCameraBtn">
+            🔄 Switch Camera
+        </button>
 
-<button id="analyzeImageBtn">
-    🤖 Analyze Image
-</button>
+        <button id="captureBtn">
+            📸 Capture
+        </button>
 
     </div>
 
-    <img id="capturedImage" style="display:none;max-width:100%;border-radius:12px;">
+    <!-- Preview -->
 
+    <img
+        id="capturedImage"
+        style="display:none;">
+
+    <!-- Description -->
+
+    <textarea
+        id="cameraPrompt"
+        placeholder="Ask anything about this image... (Optional)">
+    </textarea>
+
+    <!-- Analyze -->
+
+    <button id="analyzeImageBtn" class="analyze-btn">
+
+        🤖 Analyze Image
+
+    </button>
+
+    <!-- Result -->
 
     <div id="cameraResult"></div>
 
