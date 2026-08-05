@@ -12,76 +12,75 @@
 <body>
     
 <!-- ================= AI CAMERA ================= -->
+<!-- ================= AI CAMERA V2 ================= -->
 
 <section class="camera-section" id="cameraSection" style="display:none;">
 
     <div class="camera-header">
-
         <h2>🤖 AI Camera</h2>
-
         <button id="closeCameraBtn">✖</button>
-
     </div>
+  
+<!-- ================= AI FEATURES ================= -->
 
-    <!-- AI Features -->
+<div class="ai-feature-grid">
 
-    <div class="ai-feature-grid">
+    <button class="ai-feature active" data-feature="lens">
+        🔍
+        <span>Lens</span>
+    </button>
 
-        <button class="ai-feature active" data-feature="lens">
-            🔍
-            <span>Lens</span>
-        </button>
+    <button class="ai-feature" data-feature="math">
+        🧮
+        <span>Math Solver</span>
+    </button>
 
-        <button class="ai-feature" data-feature="math">
-            🧮
-            <span>Math Solver</span>
-        </button>
+    <button class="ai-feature" data-feature="ocr">
+        📄
+        <span>OCR</span>
+    </button>
 
-        <button class="ai-feature" data-feature="ocr">
-            📄
-            <span>OCR</span>
-        </button>
+    <button class="ai-feature" data-feature="translate">
+        🌐
+        <span>Translate</span>
+    </button>
 
-        <button class="ai-feature" data-feature="translate">
-            🌐
-            <span>Translate</span>
-        </button>
+    <button class="ai-feature" data-feature="plant">
+        🌿
+        <span>Plant</span>
+    </button>
 
-        <button class="ai-feature" data-feature="plant">
-            🌿
-            <span>Plant</span>
-        </button>
+    <button class="ai-feature" data-feature="animal">
+        🐶
+        <span>Animal</span>
+    </button>
 
-        <button class="ai-feature" data-feature="animal">
-            🐶
-            <span>Animal</span>
-        </button>
+    <button class="ai-feature" data-feature="homework">
+        📚
+        <span>Homework</span>
+    </button>
 
-        <button class="ai-feature" data-feature="homework">
-            📚
-            <span>Homework</span>
-        </button>
+    <button class="ai-feature" data-feature="diagram">
+        🧪
+        <span>Diagram</span>
+    </button>
 
-        <button class="ai-feature" data-feature="diagram">
-            🧪
-            <span>Diagram</span>
-        </button>
+</div>
 
-    </div>
+<!-- Camera Preview -->
 
-    <!-- Camera -->
+<video
+    id="cameraVideo"
+    autoplay
+    playsinline
+    muted>
+</video>
 
-    <video
-        id="cameraVideo"
-        autoplay
-        playsinline
-        muted>
-    </video>
+    <!-- Camera Preview -->
 
-    <canvas
-        id="cameraCanvas"
-        style="display:none;">
-    </canvas>
+    <video id="cameraVideo" autoplay playsinline muted></video>
+
+    <canvas id="cameraCanvas" style="display:none;"></canvas>
 
     <!-- Camera Buttons -->
 
@@ -92,7 +91,7 @@
         </button>
 
         <button id="switchCameraBtn">
-            🔄 Switch Camera
+            🔄 Switch
         </button>
 
         <button id="captureBtn">
@@ -101,26 +100,30 @@
 
     </div>
 
-    <!-- Preview -->
+    <!-- Captured Image -->
 
     <img
         id="capturedImage"
         style="display:none;">
 
-    <!-- Description -->
+    <!-- Prompt -->
 
-    <textarea
-        id="cameraPrompt"
-        placeholder="Ask anything about this image... (Optional)">
-    </textarea>
+    <div class="camera-prompt-box">
 
-    <!-- Analyze -->
+        <textarea
+            id="cameraPrompt"
+            placeholder="Ask anything about this image...">
+        </textarea>
 
-    <button id="analyzeImageBtn" class="analyze-btn">
+        <button
+            id="analyzeImageBtn"
+            class="analyze-btn">
 
-        🤖 Analyze Image
+            🤖 Analyze
 
-    </button>
+        </button>
+
+    </div>
 
     <!-- Result -->
 

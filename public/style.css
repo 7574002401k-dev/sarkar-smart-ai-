@@ -1119,4 +1119,210 @@ footer h3{
 
     color:#666;
 
+}/*
+
+/* ================= CAMERA CHAT ================= */
+
+
+#cameraPrompt{
+    flex:1;
+    min-height:80px;
+    padding:14px;
+    font-size:16px;
+    border-radius:12px;
+    border:1px solid #ccc;
+    resize:vertical;
+}
+================= CAMERA CHAT ================= */
+
+.camera-prompt-box{
+    display:flex;
+    gap:12px;
+    align-items:stretch;
+    width:100%;
+    margin:15px 0;
+}
+
+#cameraPrompt{
+    flex:1;
+    min-height:80px;
+    padding:14px;
+    font-size:16px;
+    border-radius:12px;
+    border:1px solid #ccc;
+    resize:vertical;
+}
+
+.analyze-btn{
+    width:140px;
+    min-width:140px;
+    min-height:80px;
+    border:none;
+    border-radius:12px;
+    font-size:18px;
+    font-weight:600;
+    cursor:pointer;
+}/* ================= AI CAMERA V2 ================= */
+
+.camera-section{
+    width:95%;
+    max-width:1000px;
+    margin:25px auto;
+    background:#ffffff;
+    color:#111;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+}
+
+.camera-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.camera-header h2{
+    color:#0078ff;
+}
+
+#cameraVideo{
+    width:100%;
+    display:block;
+    border-radius:15px;
+    background:#000;
+    margin-bottom:15px;
+}
+
+#capturedImage{
+    width:100%;
+    display:none;
+    border-radius:15px;
+    margin-bottom:15px;
+    background:transparent;
+}
+
+.camera-buttons{
+    display:flex;
+    gap:10px;
+    margin:15px 0;
+}
+
+.camera-buttons button{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+}
+
+.camera-prompt-box{
+    display:flex;
+    gap:12px;
+    align-items:stretch;
+    margin-top:20px;
+}
+
+#cameraPrompt{
+    flex:1;
+    min-height:90px;
+    padding:15px;
+    font-size:16px;
+    border:1px solid #ccc;
+    border-radius:12px;
+    resize:vertical;
+}
+
+.analyze-btn{
+    width:160px;
+    border:none;
+    border-radius:12px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#cameraResult{
+    margin-top:20px;
+}
+
+.camera-followup{
+    display:flex;
+    gap:12px;
+    margin-top:15px;
+}
+
+#cameraChatInput{
+    flex:1;
+    height:52px;
+    padding:0 15px;
+    border:1px solid #ccc;
+    border-radius:12px;
+    font-size:16px;
+}
+
+#cameraSendBtn{
+    width:130px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+}
+
+/* Mobile */
+
+@media (max-width:768px){
+
+    .camera-buttons,
+    .camera-prompt-box,
+    .camera-followup{
+        flex-direction:column;
+    }
+
+    .analyze-btn,
+    #cameraSendBtn{
+        width:100%;
+        height:50px;
+    }
+
+}
+/* ================= AI FEATURE GRID ================= */
+
+.ai-feature-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-bottom:20px;
+    position:relative;
+    z-index:9999;
+}
+
+.ai-feature{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    padding:12px;
+    border:none;
+    border-radius:12px;
+
+    background:#f3f4f6;
+    color:#111;
+
+    cursor:pointer;
+    transition:.25s;
+}
+
+.ai-feature:hover{
+    background:#00eaff;
+}
+
+.ai-feature.active{
+    background:#0078ff;
+    color:#fff;
 }

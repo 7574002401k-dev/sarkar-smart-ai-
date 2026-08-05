@@ -1,3 +1,4 @@
+
 import {
     addUserMessage,
     addBotMessage,
@@ -11,9 +12,13 @@ import {
 
 import { readPDF } from "./modules/pdf.js";
 
+alert("SCRIPT LOADED");
+
 let lastUserMessage = "";
 let selectedImage = null;
 
+let currentCapturedImage = "";
+let currentFeature = "lens";
 const generateImageBtn = document.getElementById("generateImageBtn");
 const imagePrompt = document.getElementById("imagePrompt");
 const imageResult = document.getElementById("imageResult");
@@ -85,6 +90,7 @@ const micBtn = document.getElementById("micBtn");
 
 const menuBtn = document.getElementById("menuBtn");
 const closeBtn = document.getElementById("closeBtn");
+const closeCameraBtn = document.getElementById("closeCameraBtn");
 const sidebar = document.getElementById("sidebar");
 
 // ================= SIDEBAR OPEN / CLOSE =================
@@ -480,7 +486,33 @@ function showSection(section){
 
 }
 
+// ================= CAMERA CLOSE =================
 
+if (closeCameraBtn) {
+
+    closeCameraBtn.onclick = () => {
+
+        // Camera stream બંધ કરો
+        if (cameraStream) {
+
+            cameraStream.getTracks().forEach(track => track.stop());
+
+            cameraStream = null;
+
+        }
+
+        if (cameraVideo) {
+
+            cameraVideo.srcObject = null;
+
+        }
+
+        // Camera બંધ કરીને Chat પર જાઓ
+        showSection("chat");
+
+    };
+
+}
 
 /* ================= IMAGE CREATOR ================= */
 
@@ -515,13 +547,33 @@ if(cameraBtn){
 
     cameraBtn.onclick=()=>{
 
-        console.log("📷 Camera Open");
+        currentFeature = "camera";
+
+        console.log("📷 Camera Mode");
 
         showSection("camera");
 
     };
 
 }
+
+//
+
+// ================= AI FEATURE MODE =================
+
+const aiFeatures = document.querySelectorAll(".ai-feature");
+
+aiFeatures.forEach((button) => {
+
+    button.addEventListener("click", () => {
+
+        currentFeature = button.dataset.feature;
+
+        console.log("Current Feature:", currentFeature);
+
+    });
+
+});
 
 let cameraStream = null;
 let facingMode = "environment"; // Default = Back Camera
@@ -545,6 +597,16 @@ async function startCamera() {
         });
 
         cameraVideo.srcObject = cameraStream;
+
+        cameraVideo.style.display = "block";
+
+capturedImage.style.display = "none";
+
+capturedImage.src = "";
+
+cameraResult.innerHTML = "";
+
+cameraPrompt.value = "";
 
     }
 
@@ -618,6 +680,8 @@ if (captureBtn) {
         capturedImage.src =
         canvas.toDataURL("image/png");
 
+        currentCapturedImage = capturedImage.src;
+
         capturedImage.style.display = "block";
 
         if (cameraStream) {
@@ -677,14 +741,28 @@ if (analyzeImageBtn) {
             await response.json();
 
             cameraResult.innerHTML = `
-                <div class="bot-message">
-                    🤖 ${data.reply}
-                </div>
-            `;
+<div class="bot-message">
+    🤖 ${data.reply}
+</div>
 
-        }
+<div class="camera-chat-box">
 
-        catch (err) {
+    <input
+        type="text"
+        id="cameraChatInput"
+        placeholder="Ask anything about this image..."
+    >
+
+    <button id="cameraSendBtn">
+        Send
+    </button>
+
+</div>
+`;
+
+document.getElementById("cameraSendBtn").onclick = sendCameraMessage;
+
+      }  catch (err) {
 
             console.error(err);
 
@@ -696,6 +774,7 @@ if (analyzeImageBtn) {
     };
 
 }
+
 
 // ================= QUIZ GENERATOR =================
 
@@ -853,6 +932,7 @@ if (generateQuizBtn) {
 
             });
 
+
             const data = await response.json();
 
             quizResult.innerHTML =
@@ -868,5 +948,183 @@ if (generateQuizBtn) {
         }
 
     };
+
+    }
+
+async function sendCameraMessage() {
+
+    const input =
+        document.getElementById("cameraChatInput");
+
+    const question = input.value.trim();
+
+    if (!question) return;
+
+    cameraResult.innerHTML += `
+        <div class="user-message">
+            👤 ${question}
+        </div>
+    `;
+
+    input.value = "";
+
+    try {
+
+        const response = await fetch("/analyze-image", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+
+                image: currentCapturedImage,
+
+                prompt: question
+
+            })
+
+        });
+
+        const data = await response.json();
+
+        cameraResult.innerHTML += `
+            <div class="bot-message">
+                🤖 ${data.reply}
+            </div>
+        `;
+
+    } catch (err) {
+
+        console.error(err);
+
+        cameraResult.innerHTML += `
+            <div class="bot-message">
+                ❌ Unable to get AI response.
+            </div>
+        `;
+    }
+
+}// 
+ //================= AI FEATURE CLICK =================
+
+const lensBtn = document.querySelector('[data-feature="lens"]');
+
+console.log("Lens Button =", lensBtn);
+
+if (lensBtn) {
+
+    lensBtn.addEventListener("click", function () {
+
+        console.log("Lens Click Working");
+
+        alert("Lens Clicked");
+
+    });
+
+}
+
+
+// ================= NORMAL AI CHAT =================
+
+async function sendMessage() {
+
+    const message = userInput.value.trim();
+
+    if (!message) return;
+
+    lastUserMessage = message;
+
+    addUserMessage(chatBox, message);
+
+    saveChat(message);
+
+    userInput.value = "";
+
+    scrollBottom(chatBox);
+
+    const typing = addTyping(chatBox);
+
+    try {
+
+        const response = await fetch("/chat", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+
+                message: message,
+
+                pdfText: currentPdfText
+
+            })
+
+        });
+
+        typing.remove();
+
+        if (!response.ok) {
+
+            throw new Error("Server Error");
+
+        }
+
+        const data = await response.json();
+
+        addBotMessage(chatBox, data.reply);
+
+        scrollBottom(chatBox);
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+
+        typing.remove();
+
+        addBotMessage(
+
+            chatBox,
+
+            "❌ Unable to connect to AI."
+
+        );
+
+    }
+
+}
+
+// ================= SEND BUTTON =================
+
+if (sendBtn) {
+
+    sendBtn.onclick = () => {
+
+        console.log("✅ Send Click");
+
+        sendMessage();
+
+    };
+
+}
+
+if (userInput) {
+
+    userInput.addEventListener("keypress", function (e) {
+
+        if (e.key === "Enter") {
+
+            sendMessage();
+
+        }
+
+    });
 
 }
