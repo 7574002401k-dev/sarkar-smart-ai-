@@ -242,6 +242,19 @@ document.getElementById("historyPanel");
 const closeHistory =
 document.getElementById("closeHistory");
 
+if (closeHistory) {
+
+    closeHistory.onclick = () => {
+
+        console.log("❌ History Closed");
+
+        historyPanel.classList.remove("active");
+
+        showSection("chat");
+
+    };
+
+}
 
 const historyList =
 document.getElementById("historyList");
