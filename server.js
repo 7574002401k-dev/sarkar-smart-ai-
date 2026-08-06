@@ -70,11 +70,47 @@ app.post("/chat", async (req, res) => {
 
         console.log("Government Result:", govResult);
         
-        if (govResult) {
-            return res.json({
-                reply: govResult
-            });
+       if (govResult) {
+
+    // જો object return થયું હોય
+    if (typeof govResult === "object") {
+
+        let reply = `${govResult.title}\n\n`;
+
+        if (govResult.query) {
+            reply += `❓ Question:\n${govResult.query}\n\n`;
         }
+
+        if (govResult.website) {
+            reply += `🌐 Official Website\n${govResult.website}\n\n`;
+        }
+
+        if (govResult.books) {
+            reply += `📚 Books\n${govResult.books}\n\n`;
+        }
+
+        reply +=
+`🤖 You can also ask:
+
+• Explain this chapter
+• PDF
+• Video
+• Notes
+• MCQ
+• Important Questions`;
+
+        return res.json({
+            reply
+        });
+
+    }
+
+    // જો string return થયું હોય
+    return res.json({
+        reply: govResult
+    });
+
+}
 
         // ===============================
         // OPENAI

@@ -1,17 +1,10 @@
-import { searchNCERT } from "./ncert.js";
-import { searchGCERT } from "./gcert.js";
-import { searchCirculars } from "./circulars.js";
-import { searchGR } from "./gr.js";
-import { searchNews } from "./news.js";
-
-export async function governmentSearch(query) {
+export function findResource(query) {
 
     const q = query.toLowerCase();
 
     // ==========================
-    // NCERT (Education)
+    // NCERT
     // ==========================
-
     if (
         q.includes("ncert") ||
         q.includes("std") ||
@@ -28,52 +21,66 @@ export async function governmentSearch(query) {
         q.includes("english") ||
         q.includes("hindi")
     ) {
-        return await searchNCERT(query);
+        return "NCERT";
     }
 
     // ==========================
     // GCERT
     // ==========================
-
     if (
         q.includes("gcert") ||
-        q.includes("gujarat textbook")
+        q.includes("gujarat textbook") ||
+        q.includes("gujarati medium")
     ) {
-        return await searchGCERT(query);
+        return "GCERT";
+    }
+
+    // ==========================
+    // CBSE
+    // ==========================
+    if (
+        q.includes("cbse")
+    ) {
+        return "CBSE";
+    }
+
+    // ==========================
+    // GSEB
+    // ==========================
+    if (
+        q.includes("gseb")
+    ) {
+        return "GSEB";
+    }
+
+    // ==========================
+    // DIKSHA
+    // ==========================
+    if (
+        q.includes("diksha")
+    ) {
+        return "DIKSHA";
     }
 
     // ==========================
     // Circular
     // ==========================
-
     if (
         q.includes("circular") ||
         q.includes("પરિપત્ર")
     ) {
-        return await searchCirculars(query);
+        return "CIRCULAR";
     }
 
     // ==========================
     // GR
     // ==========================
-
     if (
         q.includes("gr") ||
-        q.includes("ઠરાવ") ||
-        q.includes("resolution")
+        q.includes("resolution") ||
+        q.includes("ઠરાવ")
     ) {
-        return await searchGR(query);
-    }
-
-    // ==========================
-    // News
-    // ==========================
-
-    if (
-        q.includes("news") ||
-        q.includes("સમાચાર")
-    ) {
-        return await searchNews(query);
+        return "GR";
     }
 
     return null;
