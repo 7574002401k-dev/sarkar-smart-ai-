@@ -1,86 +1,43 @@
-export function findResource(query) {
+import { detectEducationSource } from "./educationDetector.js";
+
+export function findResource(query){
 
     const q = query.toLowerCase();
 
-    // ==========================
-    // NCERT
-    // ==========================
-    if (
-        q.includes("ncert") ||
-        q.includes("std") ||
-        q.includes("class") ||
-        q.includes("grade") ||
-        q.includes("chapter") ||
-        q.includes("textbook") ||
-        q.includes("math") ||
-        q.includes("maths") ||
-        q.includes("science") ||
-        q.includes("physics") ||
-        q.includes("chemistry") ||
-        q.includes("biology") ||
-        q.includes("english") ||
-        q.includes("hindi")
-    ) {
-        return "NCERT";
-    }
+    const education = detectEducationSource(query);
 
-    // ==========================
-    // GCERT
-    // ==========================
-    if (
-        q.includes("gcert") ||
-        q.includes("gujarat textbook") ||
-        q.includes("gujarati medium")
-    ) {
-        return "GCERT";
-    }
+    if(education==="NCERT") return "NCERT";
 
-    // ==========================
-    // CBSE
-    // ==========================
-    if (
-        q.includes("cbse")
-    ) {
-        return "CBSE";
-    }
+    if(education==="GCERT") return "GCERT";
 
-    // ==========================
-    // GSEB
-    // ==========================
-    if (
-        q.includes("gseb")
-    ) {
-        return "GSEB";
-    }
+    if(education==="GSEB") return "GSEB";
 
-    // ==========================
-    // DIKSHA
-    // ==========================
-    if (
+    if(
         q.includes("diksha")
-    ) {
+    ){
         return "DIKSHA";
     }
 
-    // ==========================
-    // Circular
-    // ==========================
-    if (
+    if(
         q.includes("circular") ||
         q.includes("પરિપત્ર")
-    ) {
+    ){
         return "CIRCULAR";
     }
 
-    // ==========================
-    // GR
-    // ==========================
-    if (
+    if(
         q.includes("gr") ||
         q.includes("resolution") ||
         q.includes("ઠરાવ")
-    ) {
+    ){
         return "GR";
+    }
+
+    if(
+        q.includes("news") ||
+        q.includes("સમાચાર")
+    ){
+        return "NEWS";
     }
 
     return null;

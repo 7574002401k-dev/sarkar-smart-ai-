@@ -4,78 +4,50 @@ import { searchCirculars } from "./circulars.js";
 import { searchGR } from "./gr.js";
 import { searchNews } from "./news.js";
 
+import { detectEducationSource } from "./educationDetector.js";
+import { findResource } from "./resourceFinder.js";
+
 export async function governmentSearch(query) {
 
-    const q = query.toLowerCase();
-
     // ==========================
-    // NCERT (Education)
+    // Education Source Detection
     // ==========================
 
-    if (
-        q.includes("ncert") ||
-        q.includes("std") ||
-        q.includes("class") ||
-        q.includes("grade") ||
-        q.includes("chapter") ||
-        q.includes("textbook") ||
-        q.includes("math") ||
-        q.includes("maths") ||
-        q.includes("science") ||
-        q.includes("physics") ||
-        q.includes("chemistry") ||
-        q.includes("biology") ||
-        q.includes("english") ||
-        q.includes("hindi")
-    ) {
+    const education = detectEducationSource(query);
+
+    if (education === "NCERT") {
         return await searchNCERT(query);
     }
 
-    // ==========================
-    // GCERT
-    // ==========================
-
-    if (
-        q.includes("gcert") ||
-        q.includes("gujarat textbook")
-    ) {
+    if (education === "GCERT") {
         return await searchGCERT(query);
     }
 
-    // ==========================
-    // Circular
-    // ==========================
-
-    if (
-        q.includes("circular") ||
-        q.includes("પરિપત્ર")
-    ) {
-        return await searchCirculars(query);
+    // GSEB Module (Future)
+    if (education === "GSEB") {
+        return null;
     }
 
     // ==========================
-    // GR
+    // Other Government Resources
     // ==========================
 
-    if (
-        q.includes("gr") ||
-        q.includes("ઠરાવ") ||
-        q.includes("resolution")
-    ) {
-        return await searchGR(query);
+    const resource = findResource(query);
+
+    switch (resource) {
+
+        case "CIRCULAR":
+            return await searchCirculars(query);
+
+        case "GR":
+            return await searchGR(query);
+
+        case "NEWS":
+            return await searchNews(query);
+
+        default:
+            return null;
+
     }
-
-    // ==========================
-    // News
-    // ==========================
-
-    if (
-        q.includes("news") ||
-        q.includes("સમાચાર")
-    ) {
-        return await searchNews(query);
-    }
-
-    return null;
 
 }

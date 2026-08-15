@@ -1,7 +1,67 @@
 {
-  "ncert": {
-    "name": "NCERT",
-    "website": "https://ncert.nic.in/",
-    "books": "https://ncert.nic.in/textbook.php"
+  "sources": {
+    "ncert": {
+      "name": "NCERT",
+      "website": "https://ncert.nic.in/",
+      "books": "https://ncert.nic.in/textbook.php",
+      "pdf": "https://ncert.nic.in/textbook.php",
+      "youtube": "https://www.youtube.com/@ncertofficial"
+    },
+
+    "gcert": {
+      "name": "GCERT",
+      "website": "https://gcert.gujarat.gov.in/",
+      "books": "https://gcert.gujarat.gov.in/",
+      "pdf": "https://gcert.gujarat.gov.in/",
+      "youtube": ""
+    },
+
+    "cbse": {
+      "name": "CBSE",
+      "website": "https://www.cbse.gov.in/",
+      "books": "",
+      "pdf": "",
+      "youtube": ""
+    },
+
+    "gseb": {
+      "name": "GSEB",
+      "website": "https://www.gseb.org/",
+      "books": "",
+      "pdf": "",
+      "youtube": ""
+    },
+
+    "diksha": {
+      "name": "DIKSHA",
+      "website": "https://diksha.gov.in/",
+      "books": "",
+      "pdf": "",
+      "youtube": ""
+    },
+
+    "news": {
+      "name": "PIB",
+      "website": "https://pib.gov.in/",
+      "books": "",
+      "pdf": "",
+      "youtube": ""
+    },
+
+    "gr": {
+      "name": "Government Resolution",
+      "website": "https://gujaratindia.gov.in/",
+      "books": "",
+      "pdf": "",
+      "youtube": ""
+    },
+
+    "circular": {
+      "name": "Government Circular",
+      "website": "https://www.education.gov.in/",
+      "books": "",
+      "pdf": "",
+      "youtube": ""
+    }
   }
 }

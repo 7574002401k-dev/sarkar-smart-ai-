@@ -1,140 +1,42 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Memory File
-const memoryFile = path.join(__dirname, "..", "data", "conversations.json");
+const DATA_DIR = path.join(__dirname, 'data');
+const MEMORY_FILE = path.join(DATA_DIR, 'memory.json');
 
+if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+}
 
-// ===============================
-// Load Memory
-// ===============================
+if (!fs.existsSync(MEMORY_FILE)) {
+    fs.writeFileSync(MEMORY_FILE, JSON.stringify([]));
+}
 
-function loadMemory() {
-
+export function getChatHistory() {
     try {
-
-        if (!fs.existsSync(memoryFile)) {
-
-            fs.writeFileSync(
-                memoryFile,
-                JSON.stringify({}, null, 2)
-            );
-
-        }
-
-        const data = fs.readFileSync(
-            memoryFile,
-            "utf8"
-        );
-
-        return data ? JSON.parse(data) : {};
-
-    } catch (error) {
-
-        console.log("❌ Memory Load Error:", error);
-
-        return {};
-
+        const data = fs.readFileSync(MEMORY_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (e) {
+        return [];
     }
-
 }
 
+export function saveChatMessage(role, content) {
+    let history = getChatHistory();
+    history.push({ role, content });
 
-// ===============================
-// Save Memory
-// ===============================
-
-function saveMemory(data) {
-
-    try {
-
-        fs.writeFileSync(
-            memoryFile,
-            JSON.stringify(data, null, 2)
-        );
-
-    } catch (error) {
-
-        console.log("❌ Memory Save Error:", error);
-
+    // Keep minimum 20 messages history context saved on server
+    if (history.length > 30) {
+        history = history.slice(-30);
     }
 
+    fs.writeFileSync(MEMORY_FILE, JSON.stringify(history, null, 2));
 }
 
-
-// ===============================
-// Get User Memory
-// ===============================
-
-export function getMemory(userId = "default") {
-
-    const memory = loadMemory();
-
-    if (!memory[userId]) {
-
-        memory[userId] = [];
-
-        saveMemory(memory);
-
-    }
-
-    return memory[userId];
-
-}
-
-
-// ===============================
-// Add New Memory
-// ===============================
-
-export function addMessage(userId = "default", role, content) {
-
-    const memory = loadMemory();
-
-    if (!memory[userId]) {
-
-        memory[userId] = [];
-
-    }
-
-    memory[userId].push({
-
-        role,
-        content,
-        time: new Date().toISOString()
-
-    });
-
-    // Keep only last 20 messages
-    if (memory[userId].length > 20) {
-
-        memory[userId] = memory[userId].slice(-20);
-
-    }
-
-    saveMemory(memory);
-
-    console.log("🧠 Memory Updated");
-
-}
-
-
-// ===============================
-// Clear Memory
-// ===============================
-
-export function clearMemory(userId = "default") {
-
-    const memory = loadMemory();
-
-    memory[userId] = [];
-
-    saveMemory(memory);
-
-    console.log("🗑️ Memory Cleared");
-
+export function clearHistory() {
+    fs.writeFileSync(MEMORY_FILE, JSON.stringify([]));
 }

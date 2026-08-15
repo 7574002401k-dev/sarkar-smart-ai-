@@ -1,415 +1,202 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="gu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sarkar Smart AI</title>
-
-    <link rel="stylesheet" href="style-v4.css">
-
-    
+    <title>Sarkar Smart AI - શૈક્ષણિક અને સરકારી આસિસ્ટન્ટ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    
-<!-- ================= AI CAMERA ================= -->
-<!-- ================= AI CAMERA V2 ================= -->
+    <div class="app-container">
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<section class="camera-section" id="cameraSection" style="display:none;">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="app-logo-badge clickable-logo">
+                        <img src="images/logo.png" alt="Sarkar Smart AI Logo" class="brand-logo-img">
+                    </div>
+                    <h2>Sarkar Smart AI</h2>
+                </div>
+                <button class="close-sidebar-btn" id="closeSidebarBtn" title="બંધ કરો">&times;</button>
+            </div>
+            
+            <button class="new-chat-btn" id="newChatBtn">
+                <i class="fa-solid fa-plus"></i> નવી ચેટ શરૂ કરો
+            </button>
 
-    <div class="camera-header">
-        <h2>🤖 AI Camera</h2>
-        <button id="closeCameraBtn">✖</button>
-    </div>
-  
-<!-- ================= AI FEATURES ================= -->
+            <div class="features-menu">
+                <h3>🚀 ટૂલ્સ & ટાસ્ક</h3>
+                <button class="feature-item" id="openMathSolverBtn">
+                    <i class="fa-solid fa-calculator"></i> ગણિત સોલ્વર (કેમેરા/સ્કેનર)
+                </button>
+                <button class="feature-item" id="openPdfReaderBtn">
+                    <i class="fa-solid fa-file-pdf"></i> PDF / ડોક્યુમેન્ટ રીડર
+                </button>
+                <button class="feature-item" id="openQuizModalBtn">
+                    <i class="fa-solid fa-file-pen"></i> ક્વિઝ ક્રિએટર
+                </button>
+            </div>
 
-<div class="ai-feature-grid">
+            <!-- ચેટ હિસ્ટ્રી -->
+            <div class="history-folder-container">
+                <div class="folder-header">
+                    <span><i class="fa-solid fa-clock-rotate-left"></i> ચેટ હિસ્ટ્રી</span>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="history-item" onclick="loadHistoryChat('ધોરણ 8 ગણિત પ્રકરણ 1 સોલ્યુશન')"><i class="fa-regular fa-message"></i> ધોરણ 8 ગણિત પ્રકરણ 1</div>
+                    <div class="history-item" onclick="loadHistoryChat('ગુજરાત સરકારની શૈક્ષણિક યોજનાઓ')"><i class="fa-regular fa-message"></i> શૈક્ષણિક યોજનાઓ 2026</div>
+                </div>
+            </div>
 
-    <button class="ai-feature active" data-feature="lens">
-        🔍
-        <span>Lens</span>
-    </button>
+            <div class="sidebar-footer">
+                <p>ગુજરાત શિક્ષણ અને સરકારી સેવાઓ માટે ખાસ AI મોડલ</p>
+            </div>
+        </aside>
 
-    <button class="ai-feature" data-feature="math">
-        🧮
-        <span>Math Solver</span>
-    </button>
+        <!-- Main Chat Area -->
+        <main class="chat-area">
+            <header class="chat-header">
+                <button class="toggle-sidebar-btn" id="toggleSidebarBtn" title="મેનુ ખોલો">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
 
-    <button class="ai-feature" data-feature="ocr">
-        📄
-        <span>OCR</span>
-    </button>
+                <!-- Middle Header Logo and Title -->
+                <div class="header-brand header-center">
+                    <div class="app-logo-badge clickable-logo" id="headerLogo">
+                        <img src="images/logo.png" alt="Sarkar Smart AI Logo" class="brand-logo-img">
+                    </div>
+                    <div class="header-info">
+                        <h2>Sarkar Smart AI</h2>
+                    </div>
+                </div>
 
-    <button class="ai-feature" data-feature="translate">
-        🌐
-        <span>Translate</span>
-    </button>
+                <div class="header-spacer"></div>
+            </header>
 
-    <button class="ai-feature" data-feature="plant">
-        🌿
-        <span>Plant</span>
-    </button>
+            <div class="messages-container" id="messagesContainer">
+                <!-- Initial Welcome Message with Source Footer -->
+                <div class="message assistant-message">
+                    <div class="message-content">
+                        🌟 <b>નમસ્તે! Sarkar Smart AI માં તમારું હાર્દિક સ્વાગત છે!</b><br><br>                      
+                        <div class="message-source-note" style="font-size: 11px; opacity: 0.85; margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.3); padding-top: 6px; line-height: 1.4; display: block; clear: both;">
+                            🌐 <b>Source:</b> Government Open Data Portal, GCERT/NCERT Resources & Open-Source AI Models.
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <button class="ai-feature" data-feature="animal">
-        🐶
-        <span>Animal</span>
-    </button>
+            <!-- Preview Container for Uploaded Attachments -->
+            <div class="file-preview-bar hidden" id="filePreviewBar">
+                <span id="previewFileName"></span>
+                <button id="removeFileBtn">&times;</button>
+            </div>
 
-    <button class="ai-feature" data-feature="homework">
-        📚
-        <span>Homework</span>
-    </button>
+            <!-- Chat Input Controls -->
+            <div class="chat-input-wrapper">
+                <form id="chatForm" class="chat-form">
+                    <div class="plus-menu-container">
+                        <button type="button" class="plus-btn" id="plusBtn" title="મીડિયા/ફાઈલ ઉમેરો">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <!-- Floating Menu -->
+                        <div class="plus-popup-menu hidden" id="plusMenu">
+                            <button type="button" id="menuCameraBtn"><i class="fa-solid fa-camera"></i> કેમેરા (સ્કેનર)</button>
+                            <button type="button" id="menuGalleryBtn"><i class="fa-solid fa-image"></i> ગેલેરી / ફોટો</button>
+                            <button type="button" id="menuFileBtn"><i class="fa-solid fa-file-arrow-up"></i> PDF / Word / Excel</button>
+                            <button type="button" id="menuGenBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> ઈમેજ / પોસ્ટર / વીડિયો ક્રિએટ</button>
+                        </div>
+                    </div>
 
-    <button class="ai-feature" data-feature="diagram">
-        🧪
-        <span>Diagram</span>
-    </button>
+                    <input type="file" id="fileInput" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
+                    <input type="file" id="galleryInput" class="hidden" accept="image/*">
 
-</div>
+                    <input type="text" id="userInput" placeholder="તમારો પ્રશ્ન લખો અથવા કમેન્ટ ઉમેરો..." autocomplete="off">
 
-<!-- Camera Preview -->
+                    <!-- Voice Mic Button -->
+                    <button type="button" id="micBtn" class="icon-action-btn" title="બોલીને લખો">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
 
-<video
-    id="cameraVideo"
-    autoplay
-    playsinline
-    muted>
-</video>
-
-    <!-- Camera Preview -->
-
-    <video id="cameraVideo" autoplay playsinline muted></video>
-
-    <canvas id="cameraCanvas" style="display:none;"></canvas>
-
-    <!-- Camera Buttons -->
-
-    <div class="camera-buttons">
-
-        <button id="openCameraBtn">
-            📷 Open Camera
-        </button>
-
-        <button id="switchCameraBtn">
-            🔄 Switch
-        </button>
-
-        <button id="captureBtn">
-            📸 Capture
-        </button>
-
-    </div>
-
-    <!-- Captured Image -->
-
-    <img
-        id="capturedImage"
-        style="display:none;">
-
-    <!-- Prompt -->
-
-    <div class="camera-prompt-box">
-
-        <textarea
-            id="cameraPrompt"
-            placeholder="Ask anything about this image...">
-        </textarea>
-
-        <button
-            id="analyzeImageBtn"
-            class="analyze-btn">
-
-            🤖 Analyze
-
-        </button>
-
-    </div>
-
-    <!-- Result -->
-
-    <div id="cameraResult"></div>
-
-</section>
-
-<!-- ================= MENU ================= -->
-
-<button class="menu-btn" id="menuBtn">☰</button>
-
-<!-- ================= SIDEBAR ================= -->
-
-<div class="sidebar" id="sidebar">
-
-    <button class="close-btn" id="closeBtn">✖</button>
-
-    <h2>🤖 AI Tools</h2>
-
-    <button class="tool-btn active" id="chatBtn">
-    💬 AI Chat
-</button>
-
-<button class="tool-btn" id="historyBtn">
-    🕒 Chat History
-</button>
-
-    <button class="tool-btn" id="pdfBtn">
-    📄 PDF Assistant
-</button>
-
-   <button class="tool-btn" id="imageCreatorBtn">
-    🎨 Image Creator
-</button>
-    
-    <button class="tool-btn" id="cameraBtn">
-    📷 Camera AI
-</button>
-
-<button class="tool-btn" id="quizBtn">
-    📝 Quiz Generator
-</button>
-
-</div>
-
-<!-- ================= HEADER ================= -->
-
-<header class="header">
-
-    <img src="images/logo.png"
-         alt="Sarkar Smart AI Logo"
-         class="logo">
-
-    <div>
-
-        <h1>Sarkar Smart AI</h1>
-
-        <p>
-            AI Assistant for Students, Teachers & Parents
-        </p>
-
+                    <button type="submit" id="sendBtn" class="send-btn" title="મોકલો">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </main>
     </div>
 
-</header>
-
-
-<!-- ================= CHAT ================= -->
-
-<main class="container">
-
-    
-
-    <div class="chat-box" id="chatBox">
-
-        <div class="bot-message">
-
-            🤖 Hello! I am Sarkar Smart AI.<br><br>
-
-            How can I help you today?
-
+    <!-- LOGO ZOOM MODAL -->
+    <div id="logoModal" class="logo-modal hidden">
+        <button class="close-logo-modal" id="closeLogoModal" title="બંધ કરો">&times;</button>
+        <div class="zoomed-logo-box">
+            <div class="zoomed-icon">
+                <img src="images/logo.png" alt="Sarkar Smart AI Logo" class="zoomed-logo-img">
+            </div>
+            <h2>Sarkar Smart AI</h2>
+            <p>ગુજરાત શિક્ષણ અને સરકારી આસિસ્ટન્ટ</p>
         </div>
-
     </div>
 
-   <div class="input-area">
-
-    <button id="attachBtn" title="Attach">
-        ➕
-    </button>
-
-    <input
-        type="text"
-        id="userInput"
-        placeholder="Ask anything...">
-
-    <button id="micBtn">
-        🎤
-    </button>
-
-    <button id="sendBtn">
-        ➤
-    </button>
-
-</div>
-
-<!-- Hidden File Picker -->
-
-<input
-    type="file"
-    id="filePicker"
-    hidden
-    accept="image/*,.pdf,.doc,.docx,.txt">
-</main>
-
-<!-- ================= PDF ASSISTANT ================= -->
-
-<section class="pdf-assistant" id="pdfSection" style="display:none;">
-
-    <h2>📄 AI PDF Assistant</h2>
-
-    <input type="file" id="pdfFile" accept=".pdf">
-
-    <button id="readPdfBtn">📖 Read PDF</button>
-
-    <div id="pdfResult"></div>
-
-    </section>
-
-<!-- ================= IMAGE GENERATOR ================= -->
-
-<section class="image-generator" id="imageGenerator" style="display:none;">
-
-    <h2>🎨 AI Image Generator</h2>
-
-    <p>Describe the image you want to create.</p>
-
-    <div class="image-input">
-
-        <input
-            type="text"
-            id="imagePrompt"
-            placeholder="Describe any image you want to create...">
-
-        <button id="generateImageBtn">
-            Generate Image
-        </button>
-
+    <!-- Camera / Scanner Modal -->
+    <div id="cameraModal" class="modal-card hidden">
+        <div class="modal-content camera-modal-content">
+            <div class="modal-header">
+                <h3>📷 કેમેરા</h3>
+                <button class="close-modal" id="closeCameraModalBtn">&times;</button>
+            </div>
+            <div class="camera-box">
+                <video id="webcam" autoplay playsinline></video>
+                <canvas id="cameraCanvas" class="hidden"></canvas>
+            </div>
+            <div class="camera-controls">
+                <button type="button" id="switchCameraBtn" class="cam-ctrl-btn" title="કેમેરા સ્વિચ કરો"><i class="fa-solid fa-rotate"></i></button>
+                <button type="button" id="captureBtn" class="cam-capture-btn" title="ફોટો પાડો"><i class="fa-solid fa-circle"></i></button>
+            </div>
+        </div>
     </div>
 
-    <div id="imageResult"></div>
-
-</section>
-
-<!-- ================= QUIZ GENERATOR ================= -->
-
-<section class="quiz-generator" id="quizSection" style="display:none;">
-
-    <h2>📝 AI Quiz Generator</h2>
-
-    <input
-        type="text"
-        id="quizTopic"
-        placeholder="Enter Topic">
-
-    <select id="quizClass">
-
-        <option value="">Select Class</option>
-
-        <option>1</option>
-        <option>2</option>
-        <option>3</option>
-        <option>4</option>
-        <option>5</option>
-        <option>6</option>
-        <option>7</option>
-        <option>8</option>
-        <option>9</option>
-        <option>10</option>
-        <option>11</option>
-        <option>12</option>
-
-    </select>
-
-    <select id="quizSubject">
-
-        <option value="">Select Subject</option>
-
-        <option>Gujarati</option>
-        <option>Hindi</option>
-        <option>English</option>
-        <option>Mathematics</option>
-        <option>Science</option>
-        <option>Social Science</option>
-        <option>Computer</option>
-
-    </select>
-
-    <select id="quizDifficulty">
-
-        <option>Easy</option>
-
-        <option>Medium</option>
-
-        <option>Hard</option>
-
-    </select>
-
-    <input
-        type="number"
-        id="questionCount"
-        value="20"
-        min="1"
-        max="100">
-
-    <h3>Question Types</h3>
-
-    <label><input type="checkbox" id="mcq" checked> MCQ</label><br>
-
-    <label><input type="checkbox" id="fill"> Fill in the Blanks</label><br>
-
-    <label><input type="checkbox" id="match"> Match the Following</label><br>
-
-    <label><input type="checkbox" id="short"> Short Questions</label><br>
-
-    <label><input type="checkbox" id="long"> Long Questions</label><br><br>
-
-    <label>
-        <input type="checkbox" id="answerKey" checked>
-        Include Answer Key
-    </label>
-
-    <br><br>
-
-    <button id="generateQuizBtn">
-
-        📝 Generate Quiz
-
-    </button>
-
-    <div id="quizResult"></div>
-
-</section>
-<!-- ================= FOOTER ================= -->
-
-<footer>
-
-    <p>Created by <strong>Krunal Patel</strong></p>
-
-</footer>
-
-<div class="history-panel" id="historyPanel">
-
-    <div class="history-header">
-
-        <h2>🕒 Chat History</h2>
-
-        <button id="closeHistory">✖</button>
-
+    <!-- Quiz Generator Modal -->
+    <div class="modal-card hidden" id="quizModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📝 ક્વિઝ / પ્રશ્નપત્ર જનરેટર</h3>
+                <button class="close-modal" id="closeQuizModalBtn">&times;</button>
+            </div>
+            <div class="grid-form">
+                <div class="form-group">
+                    <label>ધોરણ / વર્ગ:</label>
+                    <input type="text" id="quizStd" placeholder="દા.ત. ધોરણ 8 (અથવા General)">
+                </div>
+                <div class="form-group">
+                    <label>વિષય:</label>
+                    <input type="text" id="quizSubject" placeholder="દા.ત. સામાજિક વિજ્ઞાન / GK">
+                </div>
+                <div class="form-group">
+                    <label>પ્રકરણ / ટોપિક:</label>
+                    <input type="text" id="quizChapter" placeholder="દા.ત. દિલ્હી સલ્તનત / NEP 2020">
+                </div>
+                <div class="form-group">
+                    <label>કુલ ગુણ:</label>
+                    <input type="number" id="quizMarks" value="5" min="1" max="100">
+                </div>
+                <div class="form-group full-width">
+                    <label><b>પ્રશ્નોના પ્રકાર પસંદ કરો:</b></label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="typeMcq" checked> MCQ (વિકલ્પો)</label>
+                        <label><input type="checkbox" id="typeBlank"> ખાલી જગ્યા</label>
+                        <label><input type="checkbox" id="typeShort"> ટૂંકા પ્રશ્નો</label>
+                        <label><input type="checkbox" id="typeLong"> લાંબા પ્રશ્નો</label>
+                    </div>
+                </div>
+                <button class="action-submit-btn" id="submitQuizBtn">ક્વિઝ / પેપર બનાવો</button>
+            </div>
+        </div>
     </div>
 
-    <div id="historyList"></div>
-
-</div>
-
-<script type="module" src="script.js"></script>
-
-<div class="attach-menu" id="attachMenu">
-
-    <button id="cameraAttach">
-        📷 Camera
-    </button>
-
-    <button id="galleryAttach">
-        🖼 Gallery
-    </button>
-
-    <button id="pdfAttach">
-        📄 PDF
-    </button>
-
-    <button id="fileAttach">
-        📁 File
-    </button>
-
-</div>
-
-
+    <script src="script.js"></script>
 </body>
 </html>

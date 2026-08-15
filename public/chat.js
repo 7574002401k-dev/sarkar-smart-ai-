@@ -1,119 +1,87 @@
 import { scrollBottom, escapeHtml } from "./utils.js";
 
-
 // ================= USER MESSAGE =================
-
 export function addUserMessage(chatBox, message) {
+    if (!chatBox) return;
 
-    chatBox.innerHTML += `
+    const messageDiv = document.createElement("div");
+    messageDiv.className = "user-message";
+    messageDiv.innerHTML = `👤 ${escapeHtml(message)}`;
 
-    <div class="user-message">
-
-        👤 ${escapeHtml(message)}
-
-    </div>
-
-    `;
-
+    chatBox.appendChild(messageDiv);
     scrollBottom(chatBox);
-
 }
-
-
 
 // ================= BOT MESSAGE =================
-
 export function addBotMessage(chatBox, message) {
+    if (!chatBox) return;
 
-    chatBox.innerHTML += `
-        <div class="bot-message">
-            🤖 ${formatResponse(message)}
-        </div>
-    `;
+    const messageDiv = document.createElement("div");
+    messageDiv.className = "bot-message";
+    messageDiv.innerHTML = `🤖 ${formatResponse(message)}`;
 
+    chatBox.appendChild(messageDiv);
     scrollBottom(chatBox);
-
 }
-       
 
- 
-
-// ================= TYPING =================
-
+// ================= TYPING INDICATOR =================
 export function addTyping(chatBox) {
+    if (!chatBox) return null;
 
     const div = document.createElement("div");
-
     div.className = "bot-message typing";
-
     div.innerHTML = "🤖 Thinking...";
 
     chatBox.appendChild(div);
-
     scrollBottom(chatBox);
 
     return div;
 }
 
-
-// ================= FORMAT RESPONSE =================
-
-
-function formatResponse(text){
-
+// ================= FORMAT RESPONSE (MARKDOWN TO HTML) =================
+function formatResponse(text) {
     if (!text) {
         return "❌ No response received from AI.";
     }
 
-    return text
+    // ૧. કોડ બ્લોક્સ (```code```) ને સાચવી લેવા જેથી અંદર <br> અથવા બીજા ફોર્મેટિંગ ન ભળે
+    const codeBlocks = [];
+    let formatted = text.replace(/```([\s\S]*?)```/g, (match, code) => {
+        const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+        codeBlocks.push(`<pre><code>${escapeHtml(code.trim())}</code></pre>`);
+        return placeholder;
+    });
 
-    // Escape HTML
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
+    // ૨. બાકીના સામાન્ય ટેક્સ્ટને સેફ બનાવવું (HTML Escape)
+    formatted = escapeHtml(formatted);
 
-    // Code Blocks
-    .replace(/```([\s\S]*?)```/g,
-        "<pre><code>$1</code></pre>")
+    // ૩. ઇનલાઇન કોડ (`code`)
+    formatted = formatted.replace(/`([^`]+)`/g, "<code>$1</code>");
 
-    // Inline Code
-    .replace(/`([^`]+)`/g,
-        "<code>$1</code>")
+    // ૪. બોલ્ડ અને ઇટાલિક (**bold**, *italic*)
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    formatted = formatted.replace(/\*(.*?)\*/g, "<em>$1</em>");
 
-    // Bold
-    .replace(/\*\*(.*?)\*\*/g,
-        "<strong>$1</strong>")
+    // ૫. હેડિંગ્સ (#, ##, ###)
+    formatted = formatted.replace(/^### (.*)$/gm, "<h3>$1</h3>");
+    formatted = formatted.replace(/^## (.*)$/gm, "<h2>$2</h2>");
+    formatted = formatted.replace(/^# (.*)$/gm, "<h1>$1</h1>");
 
-    // Italic
-    .replace(/\*(.*?)\*/g,
-        "<em>$1</em>")
+    // ૬. લિસ્ટ્સ (Numbered & Bullet)
+    formatted = formatted.replace(/^([0-9]+)\.\s(.*)$/gm, "<div class='number-item'>$1. $2</div>");
+    formatted = formatted.replace(/^[-•]\s(.*)$/gm, "<div class='bullet-item'>• $1</div>");
 
-    // Headings
-    .replace(/^### (.*)$/gm,
-        "<h3>$1</h3>")
+    // ૭. લાઇન અને લિંક્સ (Auto URL Links)
+    formatted = formatted.replace(/^---$/gm, "<hr>");
+    formatted = formatted.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
 
-    .replace(/^## (.*)$/gm,
-        "<h2>$1</h2>")
+    // ૮. ન્યુલાઇનને <br> માં ફેરવવું
+    formatted = formatted.replace(/\n/g, "<br>");
 
-    .replace(/^# (.*)$/gm,
-        "<h1>$1</h1>")
+    // ૯. કોડ બ્લોક્સને પાછા તેની મૂળ જગ્યાએ સેટ કરવા
+    codeBlocks.forEach((block, index) => {
+        formatted = formatted.replace(`__CODE_BLOCK_${index}__`, block);
+    });
 
-    // Numbered List
-    .replace(/^([0-9]+)\.\s(.*)$/gm,
-        "<div class='number-item'>$1. $2</div>")
-
-    // Bullet List (-)
-    .replace(/^- (.*)$/gm,
-        "<div class='bullet-item'>• $1</div>")
-
-    // Bullet List (•)
-    .replace(/^•\s(.*)$/gm,
-        "<div class='bullet-item'>• $1</div>")
-
-    // Horizontal Line
-    .replace(/^---$/gm,
-        "<hr>")
-
-    // Line Break
-    .replace(/\n/g,"<br>");
+    return formatted;
 }

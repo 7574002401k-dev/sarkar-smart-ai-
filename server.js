@@ -1,366 +1,175 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import OpenAI from "openai";
-import path from "path";
-import { fileURLToPath } from "url";
-import { getAIResponse } from "./services/openai.js";
-import { governmentSearch } from "./government/search.js";
-
+import dotenv from 'dotenv';
 dotenv.config();
 
+import express from 'express';
+import multer from 'multer';
+import pdfParse from 'pdf-parse';
+import cors from 'cors';
+import helmet from 'helmet';
+import open from 'open';
+import mammoth from 'mammoth';
+import ExcelJS from 'exceljs';
+import { OpenAI } from 'openai';
+
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-
-// OpenAI Client (Image Generator માટે)
-const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+// OpenAI SDK Initialize
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || "YOUR_OPENAI_API_KEY_HERE"
 });
 
-// ES Module માટે __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Middleware
+// Middlewares
+app.use(helmet({ contentSecurityPolicy: false })); // Security Middleware
 app.use(cors());
-app.use(express.json({
-    limit: "20mb"
-}));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.static('public'));
 
-// Public Folder Serve
-app.use(express.static(path.join(__dirname, "public")));
-
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-// ===============================
-// HOME
-// ===============================
-
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
+// Multer Memory Setup
+const storage = multer.memoryStorage();
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 15 * 1024 * 1024 } // 15MB Limit
 });
 
-// ===============================
-// CHAT API
-// ===============================
-
-app.post("/chat", async (req, res) => {
-
+// 🧠 AI Helper Function with Direct YouTube Link Enforcement
+async function getAIResponse(prompt, history = []) {
     try {
+        const messages = [
+            { 
+                role: "system", 
+                content: `You are an official multi-purpose AI educational and administrative assistant for Gujarat & India. 
+CRITICAL RULES REGARDING SOURCES & ACCURACY:
+1. Direct YouTube Links Enforcement: When any user requests a song, video, or media content, you MUST ALWAYS provide the actual clickable Markdown link in format [Video Title](https://www.youtube.com/watch?v=...) along with the official channel name. Never refuse or say you cannot provide links.
+2. First Priority: Always fetch and base your answers strictly on official data, rules, circulars, notifications, and letters from official portals and departments such as GCERT, NCERT, SSA, CBSE, Gujarat e-Sarkar, PARAKH, SWAYAM, SEBC, Forest Department, and recognized official content sources (like Saregama for songs).
+3. At the very end of your response, you MUST explicitly specify the verified source short-form in format like: [Source: GCERT/NCERT], [Source: YouTube/Saregama], [Source: SSA Gujarat], or [Source: Gujarat e-Sarkar].
+4. If specific official data/circular is not found and you are providing general or logical assistance, clearly specify the source tag as: [Source: AI Generated].
+5. Reply strictly in the language requested by the user (Gujarati, English, Hindi, etc.).` 
+            },
+            ...history.map(h => ({
+                role: h.role === 'model' ? 'assistant' : h.role,
+                content: h.parts ? h.parts[0].text : h.content
+            })),
+            { role: "user", content: prompt }
+        ];
 
-        const userMessage = req.body.message;
-        const pdfText = req.body.pdfText || "";
-        const image = req.body.image || null;
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: messages,
+            temperature: 0.3,
+        });
 
-        if (!userMessage) {
-            return res.json({
-                reply: "Please enter your question."
+        return response.choices[0].message.content;
+    } catch (err) {
+        console.error("AI Generation Error:", err);
+        return "⚠️ AI મોડેલમાંથી જવાબ મેળવવામાં ક્ષતિ આવી છે. [Source: AI Generated]";
+    }
+}
+
+// 💬 1. Standard Chat Endpoint
+app.post('/api/chat', async (req, res) => {
+    try {
+        const { message, imageBase64, history } = req.body;
+        let promptText = message || "આ બાબતે વિગતવાર સમજાવો.";
+
+        if (imageBase64) {
+            const visionReply = await getAIResponse(`[ઈમેજ સોલ્યુશન/વિશ્લેષણ]: ${promptText}`, history);
+            return res.json({ reply: visionReply });
+        }
+
+        const reply = await getAIResponse(promptText, history || []);
+        res.json({ reply });
+    } catch (error) {
+        console.error("Chat API Error:", error);
+        res.status(500).json({ reply: "⚠️ સર્વર એરર આવી. [Source: AI Generated]" });
+    }
+});
+
+// 🎨 2. Free Image Generator Endpoint
+app.post('/api/generate-image', async (req, res) => {
+    try {
+        const { prompt } = req.body;
+        if (!prompt || prompt.trim() === "") {
+            return res.json({ reply: "⚠️ કૃપા કરીને ઈમેજ માટે ડિસ્ક્રિપ્શન લખો." });
+        }
+
+        const cleanPrompt = encodeURIComponent(prompt.trim());
+        const randomSeed = Math.floor(Math.random() * 1000000);
+        const imageUrl = `https://pollinations.ai/p/${cleanPrompt}?width=1024&height=1024&seed=${randomSeed}&nologo=true`;
+
+        res.json({
+            reply: "✨ તમારું ચિત્ર/પોસ્ટર તૈયાર છે:",
+            imageUrl: imageUrl
+        });
+    } catch (error) {
+        console.error("Image Gen Error:", error);
+        res.status(500).json({ reply: "⚠️ ઈમેજ જનરેટ કરવામાં પ્રોબ્લેમ થયો. [Source: AI Generated]" });
+    }
+});
+
+// 📄 3. Document Parser (PDF, Word, Excel)
+app.post('/api/analyze-pdf', upload.single('pdfFile'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ reply: "⚠️ કૃપા કરીને ફાઈલ પસંદ કરો." });
+        }
+
+        let extractedText = "";
+        const mimeType = req.file.mimetype;
+
+        // PDF Processing
+        if (mimeType === 'application/pdf') {
+            const pdfData = await pdfParse(req.file.buffer);
+            extractedText = pdfData.text;
+        } 
+        // Word Doc (.docx) Processing
+        else if (mimeType.includes('wordprocessingml') || mimeType.includes('msword')) {
+            const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+            extractedText = result.value;
+        } 
+        // Excel (.xlsx) Processing
+        else if (mimeType.includes('spreadsheetml') || mimeType.includes('excel')) {
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(req.file.buffer);
+            workbook.eachSheet((worksheet) => {
+                worksheet.eachRow((row) => {
+                    extractedText += row.values.join(" | ") + "\n";
+                });
             });
         }
 
-        // ===============================
-        // GOVERNMENT SEARCH
-        // ===============================
+        if (!extractedText || extractedText.trim() === "") {
+            return res.status(400).json({ reply: "⚠️ ફાઈલમાંથી ટેક્સ્ટ ઉકેલી શકાયું નથી." });
+        }
 
-        console.log("Government Search Called:", userMessage);
+        const userComment = req.body.comment || "આ ડોક્યુમેન્ટનું પૃથ્થકરણ કરો.";
+        const fullPrompt = `DOCUMENT TEXT:\n${extractedText.substring(0, 8000)}\n\nUSER REQUEST: ${userComment}`;
 
-        const govResult = await governmentSearch(userMessage);
+        const aiReply = await getAIResponse(fullPrompt);
+        res.json({ reply: aiReply });
+    } catch (error) {
+        console.error("File Analysis Error:", error);
+        res.status(500).json({ reply: "⚠️ ડોક્યુમેન્ટ પ્રોસેસિંગમાં ક્ષતિ આવી. [Source: AI Generated]" });
+    }
+});
 
-        console.log("Government Result:", govResult);
+// 📝 4. Quiz Generator Endpoint
+app.post('/api/generate-quiz', async (req, res) => {
+    try {
+        const { std, subject, chapter, totalMarks, questionTypes } = req.body;
+        const prompt = `કૃપા કરીને અધિકૃત GCERT/NCERT અભ્યાસક્રમ મુજબ ધોરણ ${std}, વિષય ${subject}, પ્રકરણ ${chapter} માટે કુલ ${totalMarks} ગુણની ક્વિઝ બનાવો જેમાં નીચેના પ્રકારના પ્રશ્નો સામેલ હોય: ${questionTypes.join(', ')}.`;
         
-       if (govResult) {
-
-    // જો object return થયું હોય
-    if (typeof govResult === "object") {
-
-        let reply = `${govResult.title}\n\n`;
-
-        if (govResult.query) {
-            reply += `❓ Question:\n${govResult.query}\n\n`;
-        }
-
-        if (govResult.website) {
-            reply += `🌐 Official Website\n${govResult.website}\n\n`;
-        }
-
-        if (govResult.books) {
-            reply += `📚 Books\n${govResult.books}\n\n`;
-        }
-
-        reply +=
-`🤖 You can also ask:
-
-• Explain this chapter
-• PDF
-• Video
-• Notes
-• MCQ
-• Important Questions`;
-
-        return res.json({
-            reply
-        });
-
-    }
-
-    // જો string return થયું હોય
-    return res.json({
-        reply: govResult
-    });
-
-}
-
-        // ===============================
-        // OPENAI
-        // ===============================
-
-        const aiReply = await getAIResponse(
-            userMessage,
-            pdfText,
-            image
-        );
-
-        res.json({
-            reply: aiReply
-        });
-
+        const quizReply = await getAIResponse(prompt);
+        res.json({ reply: quizReply });
     } catch (error) {
-
-        console.error("CHAT ERROR");
-        console.error(error);
-
-        res.status(500).json({
-            reply: "❌ Sarkar Smart AI Server Error"
-        });
-
-    }
-
-});
-
-// ===============================
-// IMAGE GENERATOR API
-// ===============================
-
-app.post("/generate-image", async (req, res) => {
-    try {
-        console.log("Image Prompt:", req.body.prompt);
-
-        const imageResponse = await client.images.generate({
-            model: "gpt-image-1",
-            prompt: req.body.prompt,
-            size: "1024x1024"
-        });
-
-        console.log("OpenAI Response:", imageResponse);
-
-        const image = imageResponse.data?.[0];
-
-        if (!image) {
-            return res.status(500).json({
-                error: "No image returned from OpenAI."
-            });
-        }
-
-        // URL મળ્યો હોય તો
-        if (image.url) {
-            return res.json({
-                image: image.url
-            });
-        }
-
-        // Base64 મળ્યો હોય તો
-        if (image.b64_json) {
-            return res.json({
-                image: `data:image/png;base64,${image.b64_json}`
-            });
-        }
-
-        return res.status(500).json({
-            error: "Unknown image response format.",
-            response: imageResponse
-        });
-
-    } catch (error) {
-
-        console.error("IMAGE ERROR");
-        console.error(error);
-
-        res.status(500).json({
-            error: error.message,
-            details: error
-        });
+        console.error("Quiz Gen Error:", error);
+        res.status(500).json({ reply: "⚠️ ક્વિઝ જનરેટ કરવામાં ક્ષતિ આવી. [Source: AI Generated]" });
     }
 });
 
-// ===============================
-// IMAGE ANALYZER API
-// ===============================
-
-app.post("/analyze-image", async (req, res) => {
-
-    try {
-
-        const { image } = req.body;
-
-        if (!image) {
-
-            return res.status(400).json({
-                error: "No image received."
-            });
-
-        }
-
-        const response = await client.chat.completions.create({
-
-            model: "gpt-4.1-mini",
-
-            messages: [
-
-                {
-                    role: "system",
-                    content:
-                        "You are an AI Vision Assistant. Explain the image in the same language as the user. If it contains a document, explain it. If it contains maths, solve it. If it contains a plant, animal or object, identify it."
-                },
-
-                {
-                    role: "user",
-                    content: [
-
-                        {
-                            type: "text",
-                            text: "Analyze this image."
-                        },
-
-                        {
-                            type: "image_url",
-                            image_url: {
-                                url: image
-                            }
-                        }
-
-                    ]
-                }
-
-            ]
-
-        });
-
-        res.json({
-
-            reply: response.choices[0].message.content
-
-        });
-
-    }
-
-    catch (error) {
-
-        console.error("VISION ERROR");
-
-        console.error(error);
-
-        res.status(500).json({
-
-            error: error.message
-
-        });
-
-    }
-
+// Start Server & Open Browser Automatically
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, async () => {
+    console.log(`🚀 Sarkar Smart AI Server running on http://localhost:${PORT}`);
+    await open(`http://localhost:${PORT}`);
 });
-
-// ===============================
-// QUIZ GENERATOR API
-// ===============================
-
-app.post("/generate-quiz", async (req, res) => {
-
-    try {
-
-        const {
-            topic,
-            className,
-            subject,
-            difficulty,
-            count
-        } = req.body;
-
-        const prompt = `
-Generate a ${count} question quiz.
-
-Class: ${className}
-Subject: ${subject}
-Difficulty: ${difficulty}
-Topic: ${topic}
-
-Rules:
-- MCQ format
-- 4 options (A, B, C, D)
-- Mention correct answer after every question.
-- Language should match the topic language.
-`;
-
-        const response = await client.chat.completions.create({
-
-            model: "gpt-4.1-mini",
-
-            messages: [
-                {
-                    role: "system",
-                    content: "You are an expert quiz generator."
-                },
-                {
-                    role: "user",
-                    content: prompt
-                }
-            ]
-
-        });
-
-        res.json({
-
-            quiz: response.choices[0].message.content
-
-        });
-
-    }
-
-    catch (error) {
-
-    console.error("========== QUIZ ERROR ==========");
-    console.error(error);
-
-    console.error("Message:", error.message);
-
-    if (error.status) {
-        console.error("Status:", error.status);
-    }
-
-    if (error.code) {
-        console.error("Code:", error.code);
-    }
-
-    if (error.response) {
-        console.error("Response:", error.response.data);
-    }
-
-    res.status(500).json({
-        quiz: "❌ Unable to generate quiz."
-    });
-
-}
-
-});
-
-// ===============================
-// SERVER START
-// ===============================
-
-app.listen(PORT, () => {
-
-    console.log(`🚀 Sarkar Smart AI Server running at http://localhost:${PORT}`);
-
-});
-

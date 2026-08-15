@@ -1,40 +1,33 @@
-import officialLinks from "../data/official-links.json" with { type: "json" };
+import { officialSearch } from "./officialSearch.js";
 
 export async function searchNCERT(query) {
 
-    return `
-📚 NCERT OFFICIAL RESOURCES
+    const result = await officialSearch("NCERT", query);
 
-❓ Your Question:
-${query}
+    if (!result) {
+        return null;
+    }
 
-━━━━━━━━━━━━━━━━━━━━━━
+    return {
 
-🌐 Official NCERT Website
-${officialLinks.ncert.website}
+        success: true,
 
-📘 NCERT Textbooks
-${officialLinks.ncert.books}
+        type: "official",
 
-━━━━━━━━━━━━━━━━━━━━━━
+        source: result.source,
 
-🤖 Sarkar Smart AI
+        query,
 
-You can also ask:
+        website: result.website,
 
-✅ Explain this chapter
-✅ Find PDF
-✅ Notes
-✅ MCQ
-✅ Important Questions
-✅ Question Answers
-✅ Summary
+        books: result.books,
 
-━━━━━━━━━━━━━━━━━━━━━━
+        pdf: result.pdf,
 
-⚠️ All educational resources are provided from the Official NCERT Website.
+        youtube: result.youtube,
 
-Created by Sarkar Smart AI
-`;
+        instruction: result.instruction
+
+    };
 
 }

@@ -48,3 +48,37 @@ export function isEducationQuery(query) {
     return keywords.some(word => q.includes(word));
 
 }
+
+
+export function detectEducationSource(query){
+
+    const q = query.toLowerCase();
+
+    if(
+        q.includes("ncert") ||
+        q.includes("cbse")
+    ){
+        return "NCERT";
+    }
+
+    if(
+        q.includes("gcert") ||
+        q.includes("gujarat textbook")
+    ){
+        return "GCERT";
+    }
+
+    if(
+        q.includes("gseb") ||
+        q.includes("gujarat board")
+    ){
+        return "GSEB";
+    }
+
+    if(isEducationQuery(query)){
+        return "EDUCATION";
+    }
+
+    return "GENERAL";
+
+}
