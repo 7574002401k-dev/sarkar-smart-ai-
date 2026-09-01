@@ -9,7 +9,13 @@ import helmet from 'helmet';
 import open from 'open';
 import mammoth from 'mammoth';
 import ExcelJS from 'exceljs';
+import axios from 'axios';
 import { OpenAI } from 'openai';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -19,73 +25,116 @@ const openai = new OpenAI({
 });
 
 // Middlewares
-app.use(helmet({ contentSecurityPolicy: false })); // Security Middleware
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(express.static('public'));
+app.use(express.static('.'));
 
 // Multer Memory Setup
 const storage = multer.memoryStorage();
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 15 * 1024 * 1024 } // 15MB Limit
+    limits: { fileSize: 15 * 1024 * 1024 } 
 });
 
-// 🧠 AI Helper Function with Direct YouTube Link Enforcement
-async function getAIResponse(prompt, history = []) {
+// 🕒 Helper Function to Get Accurate Current Date (Indian Standard Time)
+function getCurrentIndianDate() {
+    const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+    return new Intl.DateTimeFormat('en-US', options).format(new Date());
+}
+
+// 🧠 Unified AI Helper Function with Strict Rules & Anti-Guesswork Policy
+async function getAIResponse(prompt, history = [], imageBase64 = null) {
     try {
+        let userContent = prompt;
+        const todayDateStr = getCurrentIndianDate(); 
+
+        if (imageBase64) {
+            let formattedImage = imageBase64;
+            if (!formattedImage.startsWith('data:image/')) {
+                formattedImage = `data:image/jpeg;base64,${formattedImage}`;
+            }
+
+            userContent = [
+                { type: "text", text: prompt || "આ ચિત્રનું વિગતવાર વર્ણન કરો." },
+                { 
+                    type: "image_url", 
+                    image_url: { 
+                        url: formattedImage 
+                    } 
+                }
+            ];
+        }
+
         const messages = [
             { 
                 role: "system", 
-                content: `You are an official multi-purpose AI educational and administrative assistant for Gujarat & India. 
-CRITICAL RULES REGARDING SOURCES & ACCURACY:
-1. Direct YouTube Links Enforcement: When any user requests a song, video, or media content, you MUST ALWAYS provide the actual clickable Markdown link in format [Video Title](https://www.youtube.com/watch?v=...) along with the official channel name. Never refuse or say you cannot provide links.
-2. First Priority: Always fetch and base your answers strictly on official data, rules, circulars, notifications, and letters from official portals and departments such as GCERT, NCERT, SSA, CBSE, Gujarat e-Sarkar, PARAKH, SWAYAM, SEBC, Forest Department, and recognized official content sources (like Saregama for songs).
-3. At the very end of your response, you MUST explicitly specify the verified source short-form in format like: [Source: GCERT/NCERT], [Source: YouTube/Saregama], [Source: SSA Gujarat], or [Source: Gujarat e-Sarkar].
-4. If specific official data/circular is not found and you are providing general or logical assistance, clearly specify the source tag as: [Source: AI Generated].
-5. Reply strictly in the language requested by the user (Gujarati, English, Hindi, etc.).` 
+                content: `તમે 'સરકાર સ્માર્ટ એઆઈ' (Sarkar Smart AI) છો. તમે ગુજરાત અને ભારત સરકારના નિયમો, યોજનાઓ, જિલ્લાઓ, તાલુકાઓ, શિક્ષણ અને સામાન્ય જ્ઞાનના અત્યંત સચોટ એક્સપર્ટ છો.
+CURRENT REAL-TIME CONTEXT: Today is ${todayDateStr}.
+
+STRICT RULES:
+1. LANGUAGE MATCHING & PURITY: Always reply strictly in pure Gujarati script if the user asks in Gujarati, English if in English, and Hindi if in Hindi.
+2. ABSOLUTE ACCURACY & NO GUESSWORK: Never provide false, estimated, or imaginary facts. Every detail, statistic, and name must be 100% accurate. 
+3. OFFICIAL DATA PRIORITY: For regional, district, or administrative queries, always use official data. (For example: Navsari district has strictly 6 talukas: Navsari, Jalalpore, Gandevi, Chikhli, Vansda, Khergam).
+4. UNKNOWN DATA HANDLING: If you do not know the exact answer to a question with 100% certainty, do NOT guess or make up facts. Instead, clearly state: "ક્ષમા કરજો, મારી પાસે આ વિશેની સાચી માહિતી ઉપલબ્ધ નથી."
+5. ACCURATE SOURCE CITATION: At the very end of your response, you MUST clearly state the actual and accurate source (e.g., [Source: GCERT / NCERT Official Curriculum], [Source: Google News Live RSS], [Source: Digital Gujarat Portal], etc.).` 
             },
             ...history.map(h => ({
                 role: h.role === 'model' ? 'assistant' : h.role,
                 content: h.parts ? h.parts[0].text : h.content
             })),
-            { role: "user", content: prompt }
+            { role: "user", content: userContent }
         ];
 
         const response = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: messages,
-            temperature: 0.3,
+            temperature: 0.1, // AI ને કલ્પના કરતા અટકાવવા માટેનું લો ટેમ્પરેચર
         });
 
         return response.choices[0].message.content;
     } catch (err) {
         console.error("AI Generation Error:", err);
-        return "⚠️ AI મોડેલમાંથી જવાબ મેળવવામાં ક્ષતિ આવી છે. [Source: AI Generated]";
+        return "⚠️ AI મોડેલમાંથી જવાબ મેળવવામાં ક્ષતિ આવી છે. [Source: AI System Error Handler]";
     }
 }
 
-// 💬 1. Standard Chat Endpoint
+// 💬 1. Standard Chat & Vision Endpoint
 app.post('/api/chat', async (req, res) => {
     try {
         const { message, imageBase64, history } = req.body;
         let promptText = message || "આ બાબતે વિગતવાર સમજાવો.";
+        const todayDateStr = getCurrentIndianDate();
 
-        if (imageBase64) {
-            const visionReply = await getAIResponse(`[ઈમેજ સોલ્યુશન/વિશ્લેષણ]: ${promptText}`, history);
-            return res.json({ reply: visionReply });
+        const lowerMsg = promptText.toLowerCase();
+        
+        if (lowerMsg.includes('સમાચાર') || lowerMsg.includes('news') || lowerMsg.includes('live') || lowerMsg.includes('સ્કોર') || lowerMsg.includes('score') || lowerMsg.includes('match') || lowerMsg.includes('ક્રિકેટ')) {
+            let liveNewsContext = "";
+            try {
+                const rssUrl = 'https://news.google.com/rss?hl=gu&gl=IN&ceid=IN:gu';
+                const response = await axios.get(rssUrl, { timeout: 5000 });
+                if (response.data) {
+                    liveNewsContext = response.data;
+                }
+            } catch (err) {
+                console.error("RSS Fetch Error:", err.message);
+            }
+
+            promptText = `આજે તારીખ ${todayDateStr} છે. યુઝરનો સવાલ છે: "${message}". 
+જો આ સવાલ લાઈવ ક્રિકેટ સ્કોર અથવા એવી રમત સાથે સંકળાયેલ હોય જે નીચે આપેલા ન્યૂઝ ફીડમાં ઉપલબ્ધ નથી, તો કોઈપણ કાલ્પનિક સ્કોર ન આપતા સ્પષ્ટ કરો કે લાઈવ સ્કોર ઉપલબ્ધ નથી અને [Cricbuzz](https://www.cricbuzz.com) જોવા માટે કહો. જો સામાન્ય સમાચારો હોય તો નીચેના ગૂગલ ન્યૂઝ ફીડના આધારે સાચી માહિતી આપો અને જવાબના અંતે [Source: Google News Live RSS] લખો:\n\n${liveNewsContext.substring(0, 4000)}`;
         }
 
-        const reply = await getAIResponse(promptText, history || []);
+        let reply = await getAIResponse(promptText, history || [], imageBase64);
+        
         res.json({ reply });
     } catch (error) {
         console.error("Chat API Error:", error);
-        res.status(500).json({ reply: "⚠️ સર્વર એરર આવી. [Source: AI Generated]" });
+        res.status(500).json({ reply: "⚠️ સર્વર એરર આવી. [Source: System Error Handler]" });
     }
 });
 
-// 🎨 2. Free Image Generator Endpoint
+// 🎨 2. Image Generator Endpoint
 app.post('/api/generate-image', async (req, res) => {
     try {
         const { prompt } = req.body;
@@ -93,21 +142,137 @@ app.post('/api/generate-image', async (req, res) => {
             return res.json({ reply: "⚠️ કૃપા કરીને ઈમેજ માટે ડિસ્ક્રિપ્શન લખો." });
         }
 
-        const cleanPrompt = encodeURIComponent(prompt.trim());
-        const randomSeed = Math.floor(Math.random() * 1000000);
-        const imageUrl = `https://pollinations.ai/p/${cleanPrompt}?width=1024&height=1024&seed=${randomSeed}&nologo=true`;
+        const enhancedPrompt = `${prompt.trim()}, 8k resolution, photorealistic, highly detailed, sharp focus, hyperrealistic, cinematic lighting, masterpiece, best quality, intricate details`;
+        const cleanPrompt = encodeURIComponent(enhancedPrompt);
+        const randomSeed = Math.floor(Math.random() * 10000000);
+        
+        const directImageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1280&height=720&seed=${randomSeed}&nologo=true&model=flux`;
+
+        const imageFetch = await axios.get(directImageUrl, { responseType: 'arraybuffer' });
+        const base64Data = Buffer.from(imageFetch.data).toString('base64');
+        const safeDataUrl = `data:image/jpeg;base64,${base64Data}`;
 
         res.json({
-            reply: "✨ તમારું ચિત્ર/પોસ્ટર તૈયાર છે:",
-            imageUrl: imageUrl
+            reply: `✨ તમારું ચિત્ર હવે હાઈ-ક્વોલિટી અને રિયલ બની ગયું છે!\n(Refined Prompt: ${enhancedPrompt})`,
+            imageUrl: safeDataUrl,
+            source: "[Source: Pollinations Flux High-Res Engine]"
         });
     } catch (error) {
         console.error("Image Gen Error:", error);
-        res.status(500).json({ reply: "⚠️ ઈમેજ જનરેટ કરવામાં પ્રોબ્લેમ થયો. [Source: AI Generated]" });
+        res.status(500).json({ reply: "⚠️ ઈમેજ જનરેટ કરવામાં પ્રોબ્લેમ થયો. [Source: High-Res Engine Error]" });
     }
 });
 
-// 📄 3. Document Parser (PDF, Word, Excel)
+// 🧮 3. Sidebar Maths Solver Vision Endpoint
+app.post('/api/solve-math', async (req, res) => {
+    try {
+        const { imageBase64, comment } = req.body;
+        if (!imageBase64) {
+            return res.status(400).json({ reply: "⚠️ કૃપા કરીને ગણિતના દાખલાનો ફોટો અપલોડ કરો." });
+        }
+
+        let formattedImage = imageBase64;
+        if (!formattedImage.startsWith('data:image/')) {
+            formattedImage = `data:image/jpeg;base64,${formattedImage}`;
+        }
+
+        const mathPrompt = [
+            { 
+                type: "text", 
+                text: comment || "આ ફોટામાં આપેલા ગણિતના દાખલાને ધ્યાનથી વાંચો, સમજો અને તેનું સ્ટેપ-બાય-સ્ટેપ સોલ્યુશન સાથે સાચો જવાબ શુદ્ધ ગુજરાતી ભાષામાં સમજાવો. જવાબના અંતે [Source: AI Vision Math Solver] ચોક્કસ લખો." 
+            },
+            { 
+                type: "image_url", 
+                image_url: { 
+                    url: formattedImage 
+                } 
+            }
+        ];
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are an expert Mathematics teacher for Gujarati students. You analyze math problems and provide clear, step-by-step solutions in pure Gujarati script."
+                },
+                { role: "user", content: mathPrompt }
+            ],
+            temperature: 0.1,
+        });
+
+        const solutionReply = response.choices[0].message.content;
+        res.json({ reply: solutionReply });
+
+    } catch (error) {
+        console.error("Math Solver Error:", error);
+        res.status(500).json({ reply: "⚠️ ગણિતનો દાખલો સોલ્વ કરવામાં એરર આવી. [Source: Math Solver Error]" });
+    }
+});
+
+// 💪 4. Health & Fitness Calculator Endpoint
+app.post('/api/calculate-fitness', async (req, res) => {
+    try {
+        const { gender, age, height, weight, activity, message, history } = req.body;
+        
+        const uAge = parseFloat(age) || 42;
+        const uHeight = parseFloat(height) || 148;
+        const uWeight = parseFloat(weight) || 73.2;
+        const uGender = gender || "પુરુષ";
+        const uActivity = activity || "સક્રિય";
+
+        const heightM = uHeight / 100;
+        const bmi = (uWeight / (heightM * heightM)).toFixed(1);
+
+        let bmr = 0;
+        if (uGender.toLowerCase() === 'female' || uGender.includes('સ્ત્રી')) {
+            bmr = (10 * uWeight) + (6.25 * uHeight) - (5 * uAge) - 161;
+        } else {
+            bmr = (10 * uWeight) + (6.25 * uHeight) - (5 * uAge) + 5;
+        }
+
+        let multiplier = 1.2;
+        if (uActivity.includes('Moderate') || uActivity.includes('મધ્યમ')) multiplier = 1.375;
+        else if (uActivity.includes('Active') || uActivity.includes('સક્રિય')) multiplier = 1.55;
+        else if (uActivity.includes('Very') || uActivity.includes('ખૂબ')) multiplier = 1.725;
+
+        const tdee = Math.round(bmr * multiplier);
+
+        let weightStatus = "નોર્મલ વજન";
+        if (bmi < 18.5) weightStatus = "અંડરવેટ (ઓછું વજન)";
+        else if (bmi >= 25 && bmi < 30) weightStatus = "ઓવરવેટ (વધારાનું વજન)";
+        else if (bmi >= 30) weightStatus = "મેદસ્વી (ઓબેઝ)";
+
+        const idealWeightMin = (18.5 * (heightM * heightM)).toFixed(1);
+        const idealWeightMax = (24.9 * (heightM * heightM)).toFixed(1);
+
+        let prompt = `એક હેલ્થ એક્સપર્ટ તરીકે નીચે આપેલા ડેટાના આધારે વિગતવાર ફિટનેસ રિપોર્ટ શુદ્ધ ગુજરાતી ભાષામાં તૈયાર કરો:
+- લિંગ: ${uGender}
+- ઉંમર: ${uAge} વર્ષ
+- ઊંચાઈ: ${uHeight} સેમી
+- વજન: ${uWeight} કિલો
+- BMI આંકડો: ${bmi} (${weightStatus})
+- BMR: ${Math.round(bmr)} કૅલરી
+- દૈનિક કેલરીની જરૂરિયાત (TDEE): ${tdee} કૅલરી
+- આદર્શ વજનની શ્રેણી: ${idealWeightMin} થી ${idealWeightMax} કિલો.
+
+જવાબના અંતે [Source: AI Health & Fitness Expert System] ચોક્કસ લખો.`;
+
+        if (message && message.trim() !== "") {
+            prompt = `પહેલા આપેલી વિગતો: ઉંમર ${uAge} વર્ષ, ઊંચાઈ ${uHeight} સેમી, વજન ${uWeight} કિલો, BMI ${bmi} (${weightStatus}), આદર્શ વજન ${idealWeightMin}-${idealWeightMax} કિલો.
+યુઝરનો નવો સવાલ: "${message}"
+કૃપા કરીને આ વિગતોને ધ્યાનમાં રાખીને સચોટ જવાબ આપો. [Source: AI Health & Fitness Expert System]`;
+        }
+
+        let fitnessReply = await getAIResponse(prompt, history || []);
+        res.json({ reply: fitnessReply });
+    } catch (error) {
+        console.error("Fitness API Error:", error);
+        res.status(500).json({ reply: "⚠️ ફિટનેસ રિપોર્ટ જનરેટ કરવામાં ક્ષતિ આવી. [Source: Fitness System Error]" });
+    }
+});
+
+// 📄 5. Document Parser
 app.post('/api/analyze-pdf', upload.single('pdfFile'), async (req, res) => {
     try {
         if (!req.file) {
@@ -117,18 +282,13 @@ app.post('/api/analyze-pdf', upload.single('pdfFile'), async (req, res) => {
         let extractedText = "";
         const mimeType = req.file.mimetype;
 
-        // PDF Processing
         if (mimeType === 'application/pdf') {
             const pdfData = await pdfParse(req.file.buffer);
             extractedText = pdfData.text;
-        } 
-        // Word Doc (.docx) Processing
-        else if (mimeType.includes('wordprocessingml') || mimeType.includes('msword')) {
+        } else if (mimeType.includes('wordprocessingml') || mimeType.includes('msword')) {
             const result = await mammoth.extractRawText({ buffer: req.file.buffer });
             extractedText = result.value;
-        } 
-        // Excel (.xlsx) Processing
-        else if (mimeType.includes('spreadsheetml') || mimeType.includes('excel')) {
+        } else if (mimeType.includes('spreadsheetml') || mimeType.includes('excel')) {
             const workbook = new ExcelJS.Workbook();
             await workbook.xlsx.load(req.file.buffer);
             workbook.eachSheet((worksheet) => {
@@ -138,38 +298,173 @@ app.post('/api/analyze-pdf', upload.single('pdfFile'), async (req, res) => {
             });
         }
 
-        if (!extractedText || extractedText.trim() === "") {
-            return res.status(400).json({ reply: "⚠️ ફાઈલમાંથી ટેક્સ્ટ ઉકેલી શકાયું નથી." });
-        }
-
         const userComment = req.body.comment || "આ ડોક્યુમેન્ટનું પૃથ્થકરણ કરો.";
-        const fullPrompt = `DOCUMENT TEXT:\n${extractedText.substring(0, 8000)}\n\nUSER REQUEST: ${userComment}`;
+        const fullPrompt = `DOCUMENT TEXT:\n${extractedText.substring(0, 8000)}\n\nUSER REQUEST: ${userComment}\n\nકૃપા કરીને આ દસ્તાવેજના આધારે જવાબ આપો અને જવાબના અંતે [Source: User Uploaded Document Analysis (${req.file.originalname})] લખો.`;
 
-        const aiReply = await getAIResponse(fullPrompt);
+        let aiReply = await getAIResponse(fullPrompt);
+
         res.json({ reply: aiReply });
     } catch (error) {
-        console.error("File Analysis Error:", error);
-        res.status(500).json({ reply: "⚠️ ડોક્યુમેન્ટ પ્રોસેસિંગમાં ક્ષતિ આવી. [Source: AI Generated]" });
+        console.error("File Analysis Route Error:", error);
+        res.status(500).json({ reply: "⚠️ ડોક્યુમેન્ટ પ્રોસેસિંગમાં સર્વર એરર આવી છે. [Source: Document Parser System]" });
     }
 });
 
-// 📝 4. Quiz Generator Endpoint
+// 📝 6. Quiz Generator Endpoint
 app.post('/api/generate-quiz', async (req, res) => {
     try {
         const { std, subject, chapter, totalMarks, questionTypes } = req.body;
-        const prompt = `કૃપા કરીને અધિકૃત GCERT/NCERT અભ્યાસક્રમ મુજબ ધોરણ ${std}, વિષય ${subject}, પ્રકરણ ${chapter} માટે કુલ ${totalMarks} ગુણની ક્વિઝ બનાવો જેમાં નીચેના પ્રકારના પ્રશ્નો સામેલ હોય: ${questionTypes.join(', ')}.`;
+        const prompt = `કૃપા કરીને અધિકૃત GCERT/NCERT અભ્યાસક્રમ મુજબ ધોરણ ${std}, વિષય ${subject}, પ્રકરણ ${chapter} માટે કુલ ${totalMarks} ગુણની ક્વિઝ બનાવો જેમાં નીચેના પ્રકારના પ્રશ્નો સામેલ હોય: ${questionTypes.join(', ')}. જવાબના અંતે [Source: GCERT / NCERT Official Curriculum Standards] ચોક્કસ લખો.`;
         
-        const quizReply = await getAIResponse(prompt);
+        let quizReply = await getAIResponse(prompt);
+
         res.json({ reply: quizReply });
     } catch (error) {
         console.error("Quiz Gen Error:", error);
-        res.status(500).json({ reply: "⚠️ ક્વિઝ જનરેટ કરવામાં ક્ષતિ આવી. [Source: AI Generated]" });
+        res.status(500).json({ reply: "⚠️ ક્વિઝ જનરેટ કરવામાં ક્ષતિ આવી. [Source: GCERT Curriculum System]" });
     }
 });
 
-// Start Server & Open Browser Automatically
+// 📰 7. Live News Dedicated Endpoint
+const fetchLiveNewsHandler = async (req, res) => {
+    try {
+        let liveNewsContext = "";
+        const todayDateStr = getCurrentIndianDate();
+
+        try {
+            const rssUrl = 'https://news.google.com/rss?hl=gu&gl=IN&ceid=IN:gu';
+            const response = await axios.get(rssUrl, { timeout: 5000 });
+            if (response.data) {
+                liveNewsContext = response.data;
+            }
+        } catch (e) {
+            console.error("News RSS Error");
+        }
+
+        const prompt = `આજે તારીખ ${todayDateStr} છે. નીચેના ગૂગલ ન્યૂઝ ફીડ ડેટાના આધારે ગુજરાત અને ભારતભરના સૌથી મહત્વપૂર્ણ તાજા અને સચોટ સમાચારો વિગતવાર ગુજરાતીમાં લખી આપો:\n\n${liveNewsContext.substring(0, 4000)}`;
+        let newsReply = await getAIResponse(prompt);
+        
+        if (!newsReply.includes('Source:')) {
+            newsReply += `\n\n[Source: Google News Live RSS]`;
+        }
+
+        res.json({ reply: `📰 **આજના તાજા સમાચારો (Live News - ${todayDateStr}):**\n\n${newsReply}` });
+    } catch (error) {
+        res.json({ reply: "📰 તાજા સમાચાર મેળવવામાં અસ્થાયી રૂપે મુશ્કેલી છે. [Source: Google News RSS]" });
+    }
+};
+
+app.get('/api/live-news', fetchLiveNewsHandler);
+app.get('/live-news', fetchLiveNewsHandler);
+
+// 🍎 8. Food, Fruit & Drink Vision Detector Endpoint
+app.post('/api/detect-food', async (req, res) => {
+    try {
+        const { imageBase64, comment } = req.body;
+        if (!imageBase64) {
+            return res.status(400).json({ reply: "⚠️ કૃપા કરીને કોઈ ખાદ્ય પદાર્થ, ફળ કે પીણાનો ફોટો અપલોડ કરો." });
+        }
+
+        let formattedImage = imageBase64;
+        if (!formattedImage.startsWith('data:image/')) {
+            formattedImage = `data:image/jpeg;base64,${formattedImage}`;
+        }
+
+        const foodPrompt = [
+            { 
+                type: "text", 
+                text: comment || "આ ફોટામાં કયા કયા ખાદ્ય પદાર્થો, ફળો અથવા પીણાં છે તેની વિગતવાર યાદી શુદ્ધ ગુજરાતી ભાષામાં બનાવો. જવાબના અંતે [Source: AI Food & Nutrition Vision Detector] ચોક્કસ લખો." 
+            },
+            { 
+                type: "image_url", 
+                image_url: { 
+                    url: formattedImage 
+                } 
+            }
+        ];
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are an expert food and nutrition AI assistant. You analyze images and reply in pure Gujarati script."
+                },
+                { role: "user", content: foodPrompt }
+            ],
+            temperature: 0.1,
+        });
+
+        const foodReply = response.choices[0].message.content;
+        res.json({ reply: foodReply });
+
+    } catch (error) {
+        console.error("Food Detector Error:", error);
+        res.status(500).json({ reply: "⚠️ ફોટો પ્રોસેસ કરવામાં એરર આવી. [Source: Food Vision Error]" });
+    }
+});
+
+// 🎂 9. Age Calculator Endpoint
+app.post('/api/calculate-age', async (req, res) => {
+    try {
+        const { birthDate, targetDate } = req.body;
+        if (!birthDate) {
+            return res.status(400).json({ reply: "⚠️ કૃપા કરીને જન્મતારીખ પસંદ કરો." });
+        }
+
+        const bDate = new Date(birthDate);
+        const tDate = targetDate ? new Date(targetDate) : new Date();
+
+        if (isNaN(bDate.getTime())) {
+            return res.status(400).json({ reply: "⚠️ અયોગ્ય તારીખ format." });
+        }
+
+        let years = tDate.getFullYear() - bDate.getFullYear();
+        let months = tDate.getMonth() - bDate.getMonth();
+        let days = tDate.getDate() - bDate.getDate();
+
+        if (days < 0) {
+            months--;
+            const prevMonth = new Date(tDate.getFullYear(), tDate.getMonth(), 0);
+            days += prevMonth.getDate();
+        }
+
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+
+        const diffTime = Math.abs(tDate - bDate);
+        const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const totalHours = totalDays * 24;
+
+        const prompt = `એક હેલ્થ અને ડેટા એક્સપર્ટ તરીકે નીચે આપેલી ગણતરીના આધારે શુદ્ધ ગુજરાતીમાં ઉંમર રિપોર્ટ તૈયાર કરો:
+- જન્મતારીખ: ${birthDate}
+- ચોક્કસ ઉંમર: ${years} વર્ષ, ${months} મહિના, અને ${days} દિવસ
+- કુલ જીવેલા દિવસો: આશરે ${totalDays.toLocaleString()} દિવસો (${totalHours.toLocaleString()} કલાકો)
+જવાબના અંતે [Source: AI Age Calculator System] ચોક્કસ લખો.`;
+
+        const aiReply = await getAIResponse(prompt);
+        res.json({ reply: aiReply });
+
+    } catch (error) {
+        console.error("Age Calc Error:", error);
+        res.status(500).json({ reply: "⚠️ ઉંમર ગણવામાં ક્ષતિ આવી. [Source: Age Calculator Error]" });
+    }
+});
+
+// હોમ પેજ માટે રૂટ
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
     console.log(`🚀 Sarkar Smart AI Server running on http://localhost:${PORT}`);
-    await open(`http://localhost:${PORT}`);
+    try {
+        await open(`http://localhost:${PORT}`);
+    } catch (e) {
+        console.log("Browser auto-open skipped.");
+    }
 });
